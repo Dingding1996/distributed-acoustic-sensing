@@ -7,7 +7,7 @@
 | **1. Business Understanding** | Leak/intrusion detection in water pipelines; anchor strike, CPS abrasion, and cable exposure monitoring in offshore wind subsea cables |
 | **2. Data Understanding** | Public DAS dataset, raw SAC format |
 | **3. Feature Engineering** | 7 single-channel features in sliding windows: RMS, Peak, Crest Factor, Kurtosis, band energies, WPD sub-bands |
-| **4. Event Detection** | root-sum-of-squares anomaly score across all 7 z-scored features flags anomalous segment;           unsupervised extension: Isolation Forest / Autoencoder on feature vector |
+| **4. Event Detection** | anomaly score across all 7 z-scored features flags anomalous segment;           unsupervised extension: Isolation Forest / Autoencoder on feature vector |
 | **5. Source Localisation** | f-k separation isolates acoustic vs Scholte components; cross-correlation picks + hyperbola fit yields source position and excitation time|
 | **6. Beamforming** | Plane-wave slowness–time image reveals arrival direction and timing;
 | **7. Classification** | Supervised classification of labelled event types; feature vector and spectrogram  |
