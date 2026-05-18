@@ -9,20 +9,8 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 
 ## Pipeline Overview
 
-| Step | Summary |
-|---|---|
-| **1. Business Understanding** | Leak/intrusion detection in water pipelines; anchor strike, CPS abrasion, and cable exposure monitoring in offshore wind subsea cables |
-| **2. Data Understanding** | Public DAS dataset, raw SAC format |
-| **3. Feature Engineering** | 7 single-channel features in sliding windows
-| **4. Event Detection** | anomaly score across all 7 z-scored features flags anomalous segment;        
-|   |      Unsupervised extension: Isolation Forest / Autoencoder on feature vector |
-| **5. Source Localisation** | f-k separation isolates acoustic vs Scholte components; cross-correlation picks + hyperbola fit yields source position and excitation time|
-| **6. Beamforming** | Plane-wave slowness–time image reveals arrival direction and timing;
-| **7. Classification** | Supervised classification of labelled event types; feature vector and spectrogram  |
+<img src="flow">
 
-
-
----
 
 ## 1. Business Understanding
 
@@ -95,19 +83,17 @@ The dataset is publicly available.
 | Aperture used | 1.0 – 3.0 km |
 | Number of channels | 490 |
 | Record length | 4.95 s |
-| Bandpass applied | 1 – 148 Hz |
 | Water sound speed `c_water` | 1480 m/s |
-| Number of events | 10 (event_id 1–10) |
+| Bandpass applied | 1 – 148 Hz |
 
 ### File Format
 
 Raw data are stored as per-channel binary **SAC** files (`Channel_XXXX.sac`).  
-Each file contains a 70-float + 40-int header followed by 32-bit float waveform samples.
 
 ### Visualisation
 
 The raw vs bandpass-filtered waterfall (time × distance) shows the hyperbolic arrival
-pattern of the plasma-pulse wavefront, Scholte interface waves (slow, dispersive), and
+pattern of the impulse wavefront, Scholte interface waves (slow, dispersive), and
 persistent background noise.
 
 <img src="plots/raw_vs_filtered.png" width="700">
@@ -293,6 +279,20 @@ Leaks are continuous and stationary, not transient, so temporal context matters:
 - Leak signals are rare in labelled training sets; **class-weighted loss or SMOTE
   oversampling** is necessary to prevent the classifier from ignoring the minority class.
 
+
+## 8. Evaluation and Deployment
+
+### Model evaluation
+
+Trained classifiers are evaluated on held-out event windows using standard metrics: precision, recall, and F1-score per class, with particular attention to recall on rare fault classes (leaks, anchor strikes) where missed detections carry high operational cost.
+
+### Deployment architecture
+
+Signal processing pipelines are packaged as **Docker containers** to ensure reproducible environments across development, testing, and edge deployment. 
+
+A lightweight **FastAPI** service exposes the inference pipeline as a REST endpoint, accepting raw DAS channel segments and returning event classifications with confidence scores.
+
+**CI/CD**: A GitHub Actions pipeline runs on every push: unit tests for signal processing utilities, a model regression test on a reference event, and a Docker image build on merge to `main`.
 
 
 ---
