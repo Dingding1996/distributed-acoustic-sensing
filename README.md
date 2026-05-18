@@ -28,12 +28,16 @@ array of thousands of acoustic sensors. Leak orifices generate broadband turbule
 DAS captures both continuously, without on-site intervention.
 
 **Key challenges:**
-- Distinguishing leak signatures from pump harmonics, valve transients, and
-  third-party traffic noise in a shared frequency band.
-- Achieving 5–10 m localisation accuracy over pipeline runs of tens of kilometres,
-  where signal attenuation and variable pipe material affect propagation speed.
-- Maintaining reliable detection under low-flow or intermittent-pressure conditions
-  where leak acoustic output is weak.
+| | **Time Domain** | **Frequency Domain** |
+|---|---|---|
+| **Anchor strike** | Single high-energy transient, short duration (<< 1 s); hyperbolic arrival across channels | Broadband 100–400 Hz |
+| **CPS abrasion** | Repetitive scraping bursts, periodicity correlated with tidal/current cycle | Narrow-band tonal, frequency set by contact mechanics |
+| **Cable exposure** | Gradual increase in low-frequency strain, quasi-static | Energy concentration below 10 Hz |
+| **Vessel passage** | Sustained signal, linear moveout across channels at vessel speed | Tonal propeller harmonics 5–50 Hz, broadband cavitation above 100 Hz |
+| **Shipping noise** | Non-stationary, intermittent; linear moveout in space–time | Tonal lines 5–50 Hz; linear slope in f-k domain at vessel apparent velocity |
+| **Ocean swell** | Low-frequency modulation correlated across all channels simultaneously | Below 1 Hz |
+| **Whale vocalisation** | Structured call pattern, intermittent | Narrowband, species-dependent (typically 10–1000 Hz) |
+| **Cable-guided elastic wave** | Arrives earlier than water-borne wavefront; same source, different path | Steep slope in f-k domain (apparent velocity >> c_water = 1480 m/s) |
 
 ---
 
@@ -54,28 +58,15 @@ as a dense acoustic and strain sensor array spanning the full cable length (up t
 per interrogator). No offshore vessels or subsea intervention are required for monitoring.
 
 **Key challenges:**
-- Separating target signals (CPS scraping, anchor impact, cable movement) from
-  high-amplitude ocean ambient noise, shipping traffic, and biological sources
-  such as whale vocalisations.
-- Distinguishing acoustic wave arrivals (propagating through the water column at
-  ~1480 m/s) from guided elastic waves travelling along the cable structure at
-  higher apparent velocities — critical for correct source localisation.
-- Processing continuously generated, high-volume spatio-temporal data streams
-  efficiently enough for real-time alerting on edge or cloud infrastructure.
-
-
-  ### 1.3 Signal and Noise Characteristics by Application
-
-| | **Submarine Cable Monitoring** | **Water Pipeline Monitoring** |
+| | **Time Domain** | **Frequency Domain** |
 |---|---|---|
-| **Target event types** | Anchor strike, CPS abrasion, cable exposure, vessel passage | Leak (orifice), intrusion (drilling, excavation) |
-| **Target — time domain** | Transient broadband impulse, short duration; hyperbolic travel-time across channels; CPS abrasion is repetitive and correlated with tidal periodicity | Leak: continuous, stationary broadband noise; intrusion: impulsive mechanical transient |
-| **Target — frequency domain** | Broadband 100–400 Hz (impact); CPS scraping: narrow-band tonal; partial discharge: burst > 1 kHz | Leak: broadband ~100 Hz – several kHz, spectral shape set by pressure and orifice geometry; intrusion: dominant energy < 500 Hz |
-| **Noise types** | Shipping propeller harmonics, ocean swell, whale vocalisations, guided elastic waves along cable structure | Pump harmonics, valve transients, water hammer |
-| **Noise — time domain** | Non-stationary: shipping passes, swell modulation, intermittent biological calls | Periodic and deterministic: pump cycles, valve actuation bursts, decaying hammer oscillations |
-| **Noise — frequency domain** | Shipping: tonal lines 5–50 Hz with linear f-k moveout; swell: < 1 Hz correlated across all channels; elastic cable waves: steep slope in f-k space (speed >> c_water) | Pump: narrow spectral lines at fundamental and harmonics; water hammer: decaying oscillatory spectrum |
-| **Key discrimination challenge** | Separate water-borne arrivals (slope ~ c_water in f-k) from cable-guided elastic waves (steep slope); distinguish transient events from non-stationary ocean background | Separate continuous leak broadband noise from periodic pump harmonics; leak and pump overlap in frequency — temporal stationarity is the primary discriminant |
-| **Propagation medium** | Water column (~1480 m/s) + cable structure (elastic waves, >> c_water) | Pipe wall only (elastic guided waves, 1000–5000 m/s depending on material); no water-column path |
+| **Leak (orifice)** | Continuous, stationary broadband noise; sustained for as long as leak is active | Broadband ~100 Hz – several kHz; spectral shape depends on pressure differential and orifice geometry |
+| **Intrusion (drilling, excavation)** | Impulsive mechanical transients, irregular repetition rate | Dominant energy below 500 Hz; broadband impact spectrum |
+| **Pump harmonics** | Periodic, synchronised with pump rotation; highly repeatable | Narrow spectral lines at fundamental and integer harmonics; stable over time |
+| **Valve actuation** | Short-lived burst, isolated in time | Broadband, decaying rapidly after actuation |
+| **Water hammer** | Decaying oscillatory transient following rapid pressure change | Oscillatory spectrum at pipe resonance frequencies, decaying envelope |
+
+
 
 ## 2. Data Understanding
 
@@ -152,9 +143,9 @@ the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 2. The 7-feature L2 z-score (Section 3) identifies the precise anomalous segment and
    outputs `t_window_anomaly`.
 
-<img src="plots/peak_amplitude.png" width="700">
+<img src="plots/peak_amplitude.png" width="630">
 
-<img src="plots/anomaly_detection.png" width="700">
+<img src="plots/anomaly_detection.png" width="630">
 
 
 ### Suggested Extension — Machine Learning Anomaly Detection
@@ -188,7 +179,7 @@ separates:
 
 <img src="plots/fk_strain.png" width="700">
 
-<img src="plots/fk_single_ch539.png" width="700">
+<img src="plots/fk_single_ch539.png" width="630">
 
 <img src="plots/stft_fk_ch539.png" width="700">
 
@@ -259,7 +250,7 @@ produces a beamformed time-domain signal with improved coherence.
 > gain is limited by spatially correlated noise and the cos²(θ) DAS directional sensitivity.
 > The peak single channel may outperform the array average in this geometry.
 
-<img src="plots/focused_das.png" width="700">
+<img src="plots/focused_das.png" width="630">
 
 
 
