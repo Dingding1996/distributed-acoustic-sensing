@@ -1,24 +1,26 @@
 # Distributed Acoustic Sensing - Signal Processing
 
+### What is DAS?
+
+Distributed Acoustic Sensing (DAS) converts a standard optical fibre into a dense array of
+acoustic sensors by measuring Rayleigh backscatter along the cable.  Each channel records the
+axial strain rate at a fixed position along the fibre, giving a 2-D space–time dataset.
+
+
 ## Pipeline Overview
 
 | Step | Summary |
 |---|---|
 | **1. Business Understanding** | Leak/intrusion detection in water pipelines; anchor strike, CPS abrasion, and cable exposure monitoring in offshore wind subsea cables |
 | **2. Data Understanding** | Public DAS dataset, raw SAC format |
-| **3. Feature Engineering** | 7 single-channel features in sliding windows: RMS, Peak, Crest Factor, Kurtosis, band energies, WPD sub-bands |
-| **4. Event Detection** | anomaly score across all 7 z-scored features flags anomalous segment;           unsupervised extension: Isolation Forest / Autoencoder on feature vector |
+| **3. Feature Engineering** | 7 single-channel features in sliding windows
+| **4. Event Detection** | anomaly score across all 7 z-scored features flags anomalous segment;        
+|   |      Unsupervised extension: Isolation Forest / Autoencoder on feature vector |
 | **5. Source Localisation** | f-k separation isolates acoustic vs Scholte components; cross-correlation picks + hyperbola fit yields source position and excitation time|
 | **6. Beamforming** | Plane-wave slowness–time image reveals arrival direction and timing;
 | **7. Classification** | Supervised classification of labelled event types; feature vector and spectrogram  |
 
-## 1. Business Understanding
 
-### What is DAS?
-
-Distributed Acoustic Sensing (DAS) converts a standard optical fibre into a dense array of
-acoustic sensors by measuring Rayleigh backscatter along the cable.  Each channel records the
-axial strain rate at a fixed position along the fibre, giving a 2-D space–time dataset.
 
 ---
 
