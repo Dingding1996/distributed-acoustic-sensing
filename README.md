@@ -9,7 +9,7 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 
 ## Pipeline Overview
 
-![alt text](flow.jpg)
+<img src="plots/flow.jpg">
 
 This project covers the first 6 steps.
 
@@ -263,7 +263,7 @@ ignoring minority classes.
 
 Trained classifiers are evaluated on held-out event windows using standard metrics: precision, recall, and F1-score per class, with particular attention to recall on rare fault classes (leaks, anchor strikes) where missed detections carry high operational cost.
 
-<img src="plots/Confusion.jpg" width="489">
+<img src="plots/confusion.jpg" width="489">
 
 ### Deployment architecture
 
