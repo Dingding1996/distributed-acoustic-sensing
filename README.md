@@ -12,36 +12,8 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 
 ## 1. Business Understanding
 
-### 1.1 Water Pipeline Monitoring
 
-Water utilities operate extensive buried pipeline networks that are difficult and costly
-to inspect. Undetected leaks cause Non-Revenue Water losses that can exceed 20–30%
-of total supply in ageing networks, while unauthorised intrusions and third-party damage
-pose safety and service-continuity risks.
-
-**Objective:** Detect and localise leaks and intrusions in real time, with sufficient
-spatial precision (<10 m) to guide targeted repair without unnecessary excavation.
-
-**Why DAS:** A single fibre installed inside or alongside the pipe acts as a continuous
-array of thousands of acoustic sensors. Leak orifices generate broadband turbulent noise
-(~100 Hz – several kHz); intrusion events produce characteristic mechanical impacts.
-DAS captures both continuously, without on-site intervention.
-
-**Key challenges:**
-| | **Time Domain** | **Frequency Domain** |
-|---|---|---|
-| **Anchor strike** | Single high-energy transient, short duration (<< 1 s); hyperbolic arrival across channels | Broadband 100–400 Hz |
-| **CPS abrasion** | Repetitive scraping bursts, periodicity correlated with tidal/current cycle | Narrow-band tonal, frequency set by contact mechanics |
-| **Cable exposure** | Gradual increase in low-frequency strain, quasi-static | Energy concentration below 10 Hz |
-| **Vessel passage** | Sustained signal, linear moveout across channels at vessel speed | Tonal propeller harmonics 5–50 Hz, broadband cavitation above 100 Hz |
-| **Shipping noise** | Non-stationary, intermittent; linear moveout in space–time | Tonal lines 5–50 Hz; linear slope in f-k domain at vessel apparent velocity |
-| **Ocean swell** | Low-frequency modulation correlated across all channels simultaneously | Below 1 Hz |
-| **Whale vocalisation** | Structured call pattern, intermittent | Narrowband, species-dependent (typically 10–1000 Hz) |
-| **Cable-guided elastic wave** | Arrives earlier than water-borne wavefront; same source, different path | Steep slope in f-k domain (apparent velocity >> c_water = 1480 m/s) |
-
----
-
-### 1.2 Submarine Cable Monitoring (Offshore Wind)
+### 1.1 Submarine Cable Monitoring (Offshore Wind)
 
 Offshore wind farms depend on subsea export and inter-array power cables to deliver
 electricity to shore. Cable failure causes expensive downtime; repair
@@ -58,13 +30,42 @@ as a dense acoustic and strain sensor array spanning the full cable length (up t
 per interrogator). No offshore vessels or subsea intervention are required for monitoring.
 
 **Key challenges:**
-| | **Time Domain** | **Frequency Domain** |
-|---|---|---|
-| **Leak (orifice)** | Continuous, stationary broadband noise; sustained for as long as leak is active | Broadband ~100 Hz – several kHz; spectral shape depends on pressure differential and orifice geometry |
-| **Intrusion (drilling, excavation)** | Impulsive mechanical transients, irregular repetition rate | Dominant energy below 500 Hz; broadband impact spectrum |
-| **Pump harmonics** | Periodic, synchronised with pump rotation; highly repeatable | Narrow spectral lines at fundamental and integer harmonics; stable over time |
-| **Valve actuation** | Short-lived burst, isolated in time | Broadband, decaying rapidly after actuation |
-| **Water hammer** | Decaying oscillatory transient following rapid pressure change | Oscillatory spectrum at pipe resonance frequencies, decaying envelope |
+| | **Type** | **Time Domain** | **Frequency Domain** |
+|---|---|---|---|
+| **Anchor strike** | Target | Single high-energy transient, short duration (<< 1 s); hyperbolic arrival across channels | Broadband 100–400 Hz |
+| **CPS abrasion** | Target | Repetitive scraping bursts, periodicity correlated with tidal/current cycle | Narrow-band tonal, frequency set by contact mechanics |
+| **Cable exposure** | Target | Gradual increase in low-frequency strain, quasi-static | Energy concentration below 10 Hz |
+| **Vessel passage** | Target | Sustained signal, linear moveout across channels at vessel speed | Tonal propeller harmonics 5–50 Hz, broadband cavitation above 100 Hz |
+| **Shipping noise** | Noise | Non-stationary, intermittent; linear moveout in space–time | Tonal lines 5–50 Hz; linear slope in f-k domain at vessel apparent velocity |
+| **Ocean swell** | Noise | Low-frequency modulation correlated across all channels simultaneously | Below 1 Hz |
+| **Whale vocalisation** | Noise | Structured call pattern, intermittent | Narrowband, species-dependent (typically 10–1000 Hz) |
+| **Cable-guided elastic wave** | Noise | Arrives earlier than water-borne wavefront; same source, different path | Steep slope in f-k domain (apparent velocity >> c_water = 1480 m/s) |
+
+
+---
+### 1.2 Water Pipeline Monitoring
+
+Water utilities operate extensive buried pipeline networks that are difficult and costly
+to inspect. Undetected leaks cause Non-Revenue Water losses that can exceed 20–30%
+of total supply in ageing networks, while unauthorised intrusions and third-party damage
+pose safety and service-continuity risks.
+
+**Objective:** Detect and localise leaks and intrusions in real time, with sufficient
+spatial precision (<10 m) to guide targeted repair without unnecessary excavation.
+
+**Why DAS:** A single fibre installed inside or alongside the pipe acts as a continuous
+array of thousands of acoustic sensors. Leak orifices generate broadband turbulent noise
+(~100 Hz – several kHz); intrusion events produce characteristic mechanical impacts.
+DAS captures both continuously, without on-site intervention.
+
+**Key challenges:**
+| | **Type** | **Time Domain** | **Frequency Domain** |
+|---|---|---|---|
+| **Leak (orifice)** | Target | Continuous, stationary broadband noise; sustained for as long as leak is active | Broadband ~100 Hz – several kHz; spectral shape depends on pressure differential and orifice geometry |
+| **Intrusion (drilling, excavation)** | Target | Impulsive mechanical transients, irregular repetition rate | Dominant energy below 500 Hz; broadband impact spectrum |
+| **Pump harmonics** | Noise | Periodic, synchronised with pump rotation; highly repeatable | Narrow spectral lines at fundamental and integer harmonics; stable over time |
+| **Valve actuation** | Noise | Short-lived burst, isolated in time | Broadband, decaying rapidly after actuation |
+| **Water hammer** | Noise | Decaying oscillatory transient following rapid pressure change | Oscillatory spectrum at pipe resonance frequencies, decaying envelope |
 
 
 
