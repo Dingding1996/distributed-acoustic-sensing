@@ -8,9 +8,66 @@
 
 ## 1. Business Understanding
 
-> *(To be completed — describe the operational context, stakeholders, and objectives.)*
+### What is DAS?
+
+Distributed Acoustic Sensing (DAS) converts a standard optical fibre into a dense array of
+acoustic sensors by measuring Rayleigh backscatter along the cable.  Each channel records the
+axial strain rate at a fixed position along the fibre, giving a 2-D space–time dataset.
 
 ---
+
+## 1. Business Understanding
+
+### 1.1 Water Pipeline Monitoring
+
+Water utilities operate extensive buried pipeline networks that are difficult and costly
+to inspect. Undetected leaks cause Non-Revenue Water (NRW) losses that can exceed 20–30%
+of total supply in ageing networks, while unauthorised intrusions and third-party damage
+pose safety and service-continuity risks.
+
+**Objective:** Detect and localise leaks and intrusions in real time, with sufficient
+spatial precision (<10 m) to guide targeted repair without unnecessary excavation.
+
+**Why DAS:** A single fibre installed inside or alongside the pipe acts as a continuous
+array of thousands of acoustic sensors. Leak orifices generate broadband turbulent noise
+(~100 Hz – several kHz); intrusion events produce characteristic mechanical impacts.
+DAS captures both continuously, without on-site intervention.
+
+**Key challenges:**
+- Distinguishing leak signatures from pump harmonics, valve transients, and
+  third-party traffic noise in a shared frequency band.
+- Achieving 5–10 m localisation accuracy over pipeline runs of tens of kilometres,
+  where signal attenuation and variable pipe material affect propagation speed.
+- Maintaining reliable detection under low-flow or intermittent-pressure conditions
+  where leak acoustic output is weak.
+
+---
+
+### 1.2 Submarine Cable Monitoring (Offshore Wind)
+
+Offshore wind farms depend on subsea export and inter-array power cables to deliver
+electricity to shore. Cable failure causes prolonged and expensive downtime; repair
+campaigns require specialised vessels and can take weeks. Cables face burial exposure,
+mechanical fatigue at Cable Protection Systems (CPS), third-party anchor strikes, and
+electrical faults — all difficult to detect by periodic vessel-based inspection.
+
+**Objective:** Provide continuous, real-time health monitoring of subsea power cables —
+detecting exposure, CPS abrasion, impact events, and electrical anomalies — to enable
+proactive O&M decisions and reduce unplanned downtime.
+
+**Why DAS:** The optical fibre already embedded in the cable's structure is repurposed
+as a dense acoustic and strain sensor array spanning the full cable length (up to 70 km
+per interrogator). No offshore vessels or subsea intervention are required for monitoring.
+
+**Key challenges:**
+- Separating target signals (CPS scraping, anchor impact, cable movement) from
+  high-amplitude ocean ambient noise, shipping traffic, and biological sources
+  such as whale vocalisations.
+- Distinguishing acoustic wave arrivals (propagating through the water column at
+  ~1480 m/s) from guided elastic waves travelling along the cable structure at
+  higher apparent velocities — critical for correct source localisation.
+- Processing continuously generated, high-volume spatio-temporal data streams
+  efficiently enough for real-time alerting on edge or cloud infrastructure.
 
 ## 2. Data Understanding
 
@@ -22,13 +79,8 @@
 > *Journal of Lightwave Technology*, vol. 43, no. 18, pp. 8917–8926, 15 Sept. 2025.
 > doi: [10.1109/JLT.2025.3588069](https://doi.org/10.1109/JLT.2025.3588069)
 
-The dataset is publicly available as part of the **PubDAS** repository.
+The dataset is publicly available.
 
-### What is DAS?
-
-Distributed Acoustic Sensing (DAS) converts a standard optical fibre into a dense array of
-acoustic sensors by measuring Rayleigh backscatter along the cable.  Each channel records the
-axial strain rate at a fixed position along the fibre, giving a 2-D space–time dataset.
 
 ### Dataset Parameters
 
@@ -92,12 +144,17 @@ the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 2. The 7-feature L2 z-score (Section 3) identifies the precise anomalous segment and
    outputs `t_window_anomaly`.
 
+![Event detection](plots/peak_amplitude.png)
+
+![Anomaly detection score](plots/anomaly_detection.png)
+
+
 ### Suggested Extension — Machine Learning Anomaly Detection
 
 The 7-feature vector (or the WPD sub-band energies) forms a compact representation suitable
 for supervised or unsupervised ML:
 
-- **Unsupervised:** Isolation Forest, Local Outlier Factor, Autoencoder on feature sequences
+- **Unsupervised:** Isolation Forest / Autoencoder on feature sequences
 - **Supervised:** Random Forest / XGBoost trained on labelled event windows
 - **Sequence models:** LSTM / Transformer on the sliding-window feature matrix to capture
   temporal evolution of the anomaly
@@ -105,9 +162,6 @@ for supervised or unsupervised ML:
 The `t_window_anomaly` output of the current method can serve as a weak label for
 bootstrapping supervised approaches.
 
-![Event detection](plots/peak_amplitude.png)
-
-![Anomaly detection score](plots/anomaly_detection.png)
 
 ---
 
@@ -198,34 +252,117 @@ produces a beamformed time-domain signal with improved coherence.
 
 ![Focused DAS — time domain and Welch PSD](plots/focused_das.png)
 
----
-
-## 7. Classification of Acoustic Events
-
 The final output combines:
 
-- **Time-domain:** focused DAS waveform showing the pulse shape, coda, and decay
-- **Frequency-domain:** Welch PSD of the focused signal (bar chart, 1–148 Hz)
+- **Time-domain:** focused DAS waveform showing the pulse shape
+- **Frequency-domain:** Welch PSD of the focused signal
 
 The PSD shows a dominant peak near **100 Hz**, consistent with the plasma-pulse source
 spectrum reported in the paper.
+---
 
-### Feature-Based Classification Framework
+
+## 7. Classification of Acoustic Events
+
+DAS monitoring serves two distinct operational contexts — submarine cable surveillance
+and water pipeline monitoring — each with different signal and noise characteristics
+that shape the choice of classification approach.
+
+---
+
+### 7.1 Signal and Noise Characteristics by Application
+
+#### Submarine Cable Monitoring
+
+Target events arrive as **transient, broadband impulses** propagating through the water
+column at ~1480 m/s, producing a hyperbolic travel-time signature across the array.
+Distinct event types include anchor strikes (high-energy, short duration), CPS abrasion
+(repetitive narrow-band scraping correlated with tidal/current periodicity), cable
+exposure (gradual low-frequency strain increase), and electrical partial discharge
+(high-frequency burst, >1 kHz).
+
+Background noise is **spatially and temporally non-stationary**: shipping traffic
+contributes tonal propeller harmonics (5–50 Hz) with characteristic linear moveout in
+the f-k domain; ocean swell generates low-frequency (< 1 Hz) correlated noise across
+all channels; biological sources such as whale vocalisations produce structured
+narrowband calls. Crucially, guided elastic waves travelling along the cable structure
+at speeds well above c_water appear as steep-slope components in f-k space and must be
+separated from water-borne arrivals before classification.
+
+#### Water Pipeline Monitoring
+
+Target signals are **continuous, stationary broadband noise** rather than discrete
+impulses. Leak orifices generate turbulent flow noise spanning ~100 Hz to several kHz,
+with spectral shape dependent on pressure differential and orifice geometry. Intrusion
+events (drilling, excavation) produce impulsive mechanical transients with dominant
+energy below 500 Hz.
+
+Background interference is **deterministic and periodic**: pump harmonics appear as
+narrow spectral lines at fundamental and overtone frequencies; valve actuation produces
+short-lived broadband bursts; water hammer generates decaying oscillatory transients.
+Unlike the subsea case, signal propagation is confined to the pipe wall (elastic guided
+waves at 1000–5000 m/s depending on material), so f-k separation by water-column
+velocity is not applicable — discrimination relies on spectral and temporal features
+rather than apparent velocity.
+
+---
+
+### 7.2 Feature-Based Classification Framework
 
 The 7-feature vector (Section 3) together with source-localisation outputs `(x0, z0)`
-and beamforming slowness estimates can form a **classification feature vector**:
+and beamforming slowness estimates form a **classification feature vector**:
 
-| Feature group | Examples |
-|---------------|---------|
-| Energy features | RMS, Peak, band energies |
-| Impulsiveness | Crest Factor, Kurtosis |
-| Spectral shape | WPD sub-band ratios, PSD peak frequency |
-| Spatial | Source distance `z0`, along-cable position `x0` |
-| Directional | Dominant slowness from beamforming |
+| Feature group | Examples | Most relevant for |
+|---|---|---|
+| Energy features | RMS, Peak, band energies | Both |
+| Impulsiveness | Crest Factor, Kurtosis | Cable impacts, pipeline intrusion |
+| Spectral shape | WPD sub-band ratios, PSD peak frequency | Leak vs pump discrimination |
+| Temporal stationarity | Short-time RMS variance, autocorrelation decay | Leak (stationary) vs impact (transient) |
+| Spatial | Source distance `z0`, along-cable position `x0` | Cable localisation |
+| Directional | Dominant slowness, f-k velocity | Cable event typing |
 
-Possible classifiers: **Random Forest**, **SVM**, **1-D CNN** on the raw spectrogram.  
-With multi-event labelling (events 1–10), leave-one-out cross-validation provides an
-unbiased accuracy estimate even with the small sample size.
+---
+
+### 7.3 Recommended ML Approaches
+
+#### For submarine cable events (transient, multi-class)
+
+Events are sparse and labelled examples are scarce, favouring methods robust to small
+datasets:
+
+- **Random Forest / Gradient Boosting** on the hand-crafted feature vector: interpretable,
+  resistant to overfitting on small labelled sets, and directly auditable by domain
+  experts — important for operational deployment where false alarms are costly.
+- **1-D CNN on the f-k-filtered spectrogram**: captures the hyperbolic moveout pattern
+  that encodes both event type and source geometry; suitable when a moderate labelled
+  dataset is available across multiple deployments.
+- **One-class SVM or Isolation Forest** for anomaly detection in the absence of labelled
+  event examples: trained on background-only data and triggered when a new observation
+  falls outside the learned noise manifold.
+
+#### For pipeline leak detection (continuous signal, binary or multi-class)
+
+The continuous nature of leak signals favours methods that exploit temporal context:
+
+- **Sliding-window feature classification (Random Forest / XGBoost)**: the 7-feature
+  vector computed in overlapping windows captures the sustained elevated RMS and spectral
+  shift associated with active leaks; temporal smoothing of classifier output reduces
+  false positives from transient pump noise.
+- **Autoencoder on short-time spectrograms**: trained on normal pipeline noise; elevated
+  reconstruction error flags anomalous acoustic activity without requiring labelled leak
+  examples — practical given the rarity of real leak events in training data.
+- **Physics-informed feature engineering**: expressing band energy ratios relative to
+  known pump harmonic frequencies explicitly encodes domain knowledge and reduces the
+  burden on the classifier to learn these invariances from data.
+
+#### Shared consideration: interpretability over complexity
+
+In both applications the cost of a missed detection (cable failure, pipe burst) is high,
+and operators need to trust and audit alerts. A well-engineered feature vector fed to a
+gradient-boosted tree — with SHAP values for per-alert explanation — is therefore
+preferable to a black-box deep model unless labelled data is abundant. Deep approaches
+are best reserved for sub-tasks where their advantage is clear, such as spectrogram-based
+event typing in the submarine cable case.
 
 
 
