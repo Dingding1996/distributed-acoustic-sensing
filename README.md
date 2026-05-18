@@ -9,7 +9,7 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 
 ## Pipeline Overview
 
-<img src="flow">
+![alt text](flow.jpg)
 
 
 ## 1. Business Understanding
