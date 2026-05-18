@@ -103,12 +103,13 @@ persistent background noise.
 
 ## 3. Feature Engineering — Single-Channel Features
 
- A 0.5 s sliding window scans the full record; the window with maximum RMS energy defines
-the event channel. 
-<img src="plots/peak_amplitude.png" width="630">
+
 
 Seven features are extracted in a **sliding window** (window = 0.5 s, hop = 0.25 s) applied
-to the bandpass-filtered strain-rate time series of the peak channel.
+to the bandpass-filtered strain-rate time series of the peak channel. The window with maximum RMS energy defines
+the channel to plot. 
+
+<img src="plots/peak_amplitude.png" width="630">
 
 | Feature | Domain | Description |
 |---------|--------|-------------|
@@ -119,18 +120,18 @@ to the bandpass-filtered strain-rate time series of the peak channel.
 | **Band energy** | Frequency | Welch PSD mean, 1–50 Hz, 50–100 Hz， 100–148 Hz |
 | **WPD sub-bands** | Frequency | Wavelet packet decomposition (db4, level 3, 62 Hz / band) |
 
-
-
 <img src="plots/features_ch539.png" width="700">
 
 ---
 
 ## 4. Event Detection
 
-### Current Method — RMS Sliding Window + L2 Anomaly Score
+### Current Method — L2 Anomaly Score
 
 A combined **anomaly score** is formed by z-scoring all 7 features and computing their
-L2 norm: `score = ‖z‖₂ = √(Σ zᵢ²)` (Root-sum-of-squares). Windows exceeding a threshold (default 2.5) define
+L2 norm: `score = ‖z‖₂ = √(Σ zᵢ²)` (Root-sum-of-squares). 
+
+Windows exceeding a threshold (default 2.5) define
 the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
 <img src="plots/anomaly_detection.png" width="630">
@@ -138,18 +139,17 @@ the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
 ### Suggested Extension — Machine Learning Anomaly Detection
 
-Applicable to both submarine cable and pipeline contexts.
+Applicable to both submarine cable and pipeline contexts. No label required.
 
 - **Isolation Forest / One-Class SVM** on the 7-feature vector: trained on background
   windows only; flags observations that deviate from the learned noise distribution.
   Low complexity, fast inference, explainable via feature importance.
-- **Autoencoder on short-time spectrograms**: learns a compressed representation of
+- **Autoencoder**: learns a compressed representation of
   normal background noise; elevated reconstruction error indicates an anomalous event.
   More sensitive to subtle spectral changes than hand-crafted features, but requires
   more data to train reliably.
 
-Both methods output an anomaly score rather than a class label, which is appropriate
-when the event taxonomy is not yet defined. 
+Both methods output an anomaly score rather than a class label.
 
 ---
 
@@ -167,7 +167,6 @@ separates:
 
 <img src="plots/fk_strain.png" width="700">
 
-<img src="plots/fk_single_ch539.png" width="630">
 
 
 
@@ -222,24 +221,6 @@ The **slowness–time image** reveals:
 
 <img src="plots/beamforming_anomaly.png" width="700">
 
-### Focused DAS
-
-Using the source position `(x0, z0)` from the hyperbola fit, spherical-wave delays are
-computed for each channel:
-
-```
-τₙ = √((xₙ − x0)² + z0²) / c_water
-```
-
-Frequency-domain delay-and-sum with CC-quality-weighted channel selection (N = 22 channels)
-produces a beamformed time-domain signal with improved coherence.
-
-> **Note on limitations:** For near-field point sources observed by DAS, the beamformed SNR
-> gain is limited by spatially correlated noise and the cos²(θ) DAS directional sensitivity.
-> The peak single channel may outperform the array average in this geometry.
-
-<img src="plots/focused_das.png" width="630">
-
 
 
 ## 7. Supervised Classification of Acoustic Events
@@ -253,29 +234,27 @@ that shape the choice of classification approach.
 
 Unsupervised anomaly detection (see Section 4) flags abnormal windows without requiring
 labels. Once confirmed events have been annotated by operators, a supervised classifier
-can distinguish between event types. Label availability remains the primary constraint —
-the approaches below are ordered from least to most data-hungry.
+can distinguish between event types. Label availability remains the primary constraint.
 
-**Submarine cable** — target classes include anchor strike, CPS abrasion, cable
-exposure, vessel passage, and background. Events are transient and spatially localised,
-so the feature vector should include directional and spatial features:
+**Feature vector approach** — hand-crafted features (energy, impulsiveness, spectral
+shape, slowness, source distance) are fed to a gradient boosting classifier
+(XGBoost / LightGBM). Robust to small labelled datasets; SHAP values provide per-alert
+explanation auditable by operators. Applicable to both submarine cable and pipeline
+contexts from early deployment.
 
-- **Gradient Boosting (XGBoost / LightGBM)** on the full feature vector (energy,
-  impulsiveness, spectral shape, slowness, source distance): robust to the small
-  labelled datasets typical of early deployments; SHAP values provide per-alert
-  explanation auditable by operators.
-- **CNN on the f-k-filtered spectrogram**: the hyperbolic moveout pattern encodes both
-  event type and source geometry as a 2-D image; effective when labelled data from
-  multiple wind farms is pooled.
+**Spectrogram-based approach** — a 2-D CNN operates directly on the time–frequency
+representation, bypassing manual feature engineering:
 
-**Water pipeline** — target classes are typically leak, intrusion, pump transient, and normal.
-Leaks are continuous and stationary, not transient, so temporal context matters:
+- *Submarine cable*: the f-k-filtered spectrogram encodes hyperbolic moveout patterns
+  that carry both event type and source geometry; most effective when labelled data
+  from multiple wind farms is pooled.
+- *Water pipeline*: the short-time spectrogram separates broadband leak noise from
+  narrow pump harmonic lines as visually distinct spatial textures; a CNN can exploit
+  these directly without manual spectral feature design.
 
-- **Sliding-window Gradient Boosting**: classify each 0.5 s window independently, then
-  apply temporal smoothing (majority vote or hidden Markov model) over consecutive
-  windows to suppress isolated false positives from valve transients.
-- Leak signals are rare in labelled training sets; **class-weighted loss or SMOTE
-  oversampling** is necessary to prevent the classifier from ignoring the minority class.
+In both cases, leak and rare fault classes are underrepresented in training data;
+class-weighted loss or SMOTE oversampling is necessary to prevent the classifier from
+ignoring minority classes.
 
 
 ## 8. Evaluation and Deployment
@@ -284,14 +263,13 @@ Leaks are continuous and stationary, not transient, so temporal context matters:
 
 Trained classifiers are evaluated on held-out event windows using standard metrics: precision, recall, and F1-score per class, with particular attention to recall on rare fault classes (leaks, anchor strikes) where missed detections carry high operational cost.
 
+<img src="plots/Confusion.jpg" width="489">
+
 ### Deployment architecture
 
-Signal processing pipelines are packaged as **Docker containers** to ensure reproducible environments across development, testing, and edge deployment. 
+Signal processing pipelines are packaged as **Docker containers** to ensure reproducible environments across testing and deployment. 
 
-A lightweight **FastAPI** service exposes the inference pipeline as a REST endpoint, accepting raw DAS channel segments and returning event classifications with confidence scores.
-
-**CI/CD**: A GitHub Actions pipeline runs on every push: unit tests for signal processing utilities, a model regression test on a reference event, and a Docker image build on merge to `main`.
-
+**CI/CD**: A GitHub Actions pipeline runs on every push: unit tests for signal processing utilities, a model regression test on a reference event, and a Docker image build on merge to a release branch.
 
 ---
 
