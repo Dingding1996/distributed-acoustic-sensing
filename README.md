@@ -1,11 +1,5 @@
 # DAS Signal Processing — Submarine Cable Detection
 
-**Reference:** Lin et al. (2025), *Journal of Lightwave Technology*  
-**Dataset:** PubDAS — Zhoushan Archipelago experiment  
-**Source:** 50 kJ plasma pulse, primary frequency 100–400 Hz
-
----
-
 ## 1. Business Understanding
 
 ### What is DAS?
@@ -21,7 +15,7 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 ### 1.1 Water Pipeline Monitoring
 
 Water utilities operate extensive buried pipeline networks that are difficult and costly
-to inspect. Undetected leaks cause Non-Revenue Water (NRW) losses that can exceed 20–30%
+to inspect. Undetected leaks cause Non-Revenue Water losses that can exceed 20–30%
 of total supply in ageing networks, while unauthorised intrusions and third-party damage
 pose safety and service-continuity risks.
 
@@ -46,14 +40,14 @@ DAS captures both continuously, without on-site intervention.
 ### 1.2 Submarine Cable Monitoring (Offshore Wind)
 
 Offshore wind farms depend on subsea export and inter-array power cables to deliver
-electricity to shore. Cable failure causes prolonged and expensive downtime; repair
+electricity to shore. Cable failure causes expensive downtime; repair
 campaigns require specialised vessels and can take weeks. Cables face burial exposure,
 mechanical fatigue at Cable Protection Systems (CPS), third-party anchor strikes, and
 electrical faults — all difficult to detect by periodic vessel-based inspection.
 
 **Objective:** Provide continuous, real-time health monitoring of subsea power cables —
-detecting exposure, CPS abrasion, impact events, and electrical anomalies — to enable
-proactive O&M decisions and reduce unplanned downtime.
+detecting exposure, CPS scraping, impact events, and electrical anomalies — to enable
+proactive Operations and Maintenance decisions and reduce unplanned downtime.
 
 **Why DAS:** The optical fibre already embedded in the cable's structure is repurposed
 as a dense acoustic and strain sensor array spanning the full cable length (up to 70 km
@@ -68,6 +62,20 @@ per interrogator). No offshore vessels or subsea intervention are required for m
   higher apparent velocities — critical for correct source localisation.
 - Processing continuously generated, high-volume spatio-temporal data streams
   efficiently enough for real-time alerting on edge or cloud infrastructure.
+
+
+  ### 1.3 Signal and Noise Characteristics by Application
+
+| | **Submarine Cable Monitoring** | **Water Pipeline Monitoring** |
+|---|---|---|
+| **Target event types** | Anchor strike, CPS abrasion, cable exposure, vessel passage | Leak (orifice), intrusion (drilling, excavation) |
+| **Target — time domain** | Transient broadband impulse, short duration; hyperbolic travel-time across channels; CPS abrasion is repetitive and correlated with tidal periodicity | Leak: continuous, stationary broadband noise; intrusion: impulsive mechanical transient |
+| **Target — frequency domain** | Broadband 100–400 Hz (impact); CPS scraping: narrow-band tonal; partial discharge: burst > 1 kHz | Leak: broadband ~100 Hz – several kHz, spectral shape set by pressure and orifice geometry; intrusion: dominant energy < 500 Hz |
+| **Noise types** | Shipping propeller harmonics, ocean swell, whale vocalisations, guided elastic waves along cable structure | Pump harmonics, valve transients, water hammer |
+| **Noise — time domain** | Non-stationary: shipping passes, swell modulation, intermittent biological calls | Periodic and deterministic: pump cycles, valve actuation bursts, decaying hammer oscillations |
+| **Noise — frequency domain** | Shipping: tonal lines 5–50 Hz with linear f-k moveout; swell: < 1 Hz correlated across all channels; elastic cable waves: steep slope in f-k space (speed >> c_water) | Pump: narrow spectral lines at fundamental and harmonics; water hammer: decaying oscillatory spectrum |
+| **Key discrimination challenge** | Separate water-borne arrivals (slope ~ c_water in f-k) from cable-guided elastic waves (steep slope); distinguish transient events from non-stationary ocean background | Separate continuous leak broadband noise from periodic pump harmonics; leak and pump overlap in frequency — temporal stationarity is the primary discriminant |
+| **Propagation medium** | Water column (~1480 m/s) + cable structure (elastic waves, >> c_water) | Pipe wall only (elastic guided waves, 1000–5000 m/s depending on material); no water-column path |
 
 ## 2. Data Understanding
 
@@ -107,7 +115,7 @@ The raw vs bandpass-filtered waterfall (time × distance) shows the hyperbolic a
 pattern of the plasma-pulse wavefront, Scholte interface waves (slow, dispersive), and
 persistent background noise.
 
-![Raw vs filtered waterfall](plots/raw_vs_filtered.png)
+<img src="plots/raw_vs_filtered.png" width="700">
 
 ---
 
@@ -131,7 +139,7 @@ A combined **anomaly score** is formed by z-scoring all 7 features and computing
 L2 norm: `score = ‖z‖₂ = √(Σ zᵢ²)`.  Windows exceeding a threshold (default 2.5) define
 the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
-![Single-channel features](plots/features_ch539.png)
+<img src="plots/features_ch539.png" width="700">
 
 ---
 
@@ -144,24 +152,25 @@ the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 2. The 7-feature L2 z-score (Section 3) identifies the precise anomalous segment and
    outputs `t_window_anomaly`.
 
-![Event detection](plots/peak_amplitude.png)
+<img src="plots/peak_amplitude.png" width="700">
 
-![Anomaly detection score](plots/anomaly_detection.png)
+<img src="plots/anomaly_detection.png" width="700">
 
 
 ### Suggested Extension — Machine Learning Anomaly Detection
 
-The 7-feature vector (or the WPD sub-band energies) forms a compact representation suitable
-for supervised or unsupervised ML:
+Applicable to both submarine cable and pipeline contexts from day one.
 
-- **Unsupervised:** Isolation Forest / Autoencoder on feature sequences
-- **Supervised:** Random Forest / XGBoost trained on labelled event windows
-- **Sequence models:** LSTM / Transformer on the sliding-window feature matrix to capture
-  temporal evolution of the anomaly
+- **Isolation Forest / One-Class SVM** on the 7-feature vector: trained on background
+  windows only; flags observations that deviate from the learned noise distribution.
+  Low complexity, fast inference, explainable via feature importance.
+- **Autoencoder on short-time spectrograms**: learns a compressed representation of
+  normal background noise; elevated reconstruction error indicates an anomalous event.
+  More sensitive to subtle spectral changes than hand-crafted features, but requires
+  more data to train reliably.
 
-The `t_window_anomaly` output of the current method can serve as a weak label for
-bootstrapping supervised approaches.
-
+Both methods output an anomaly score rather than a class label, which is appropriate
+when the event taxonomy is not yet defined. 
 
 ---
 
@@ -175,13 +184,13 @@ separates:
 - **Scholte component** — apparent velocity 200–1480 m/s
 
 
-![f-k spectrum](plots/fk_spectrum.png)
+<img src="plots/fk_spectrum.png" width="489">
 
-![Acoustic and Scholte filtered waterfalls](plots/fk_strain.png)
+<img src="plots/fk_strain.png" width="700">
 
-![Single-channel f-k decomposition](plots/fk_single_ch539.png)
+<img src="plots/fk_single_ch539.png" width="700">
 
-![STFT after f-k separation](plots/stft_fk_ch539.png)
+<img src="plots/stft_fk_ch539.png" width="700">
 
 ### Hyperbola Fit
 
@@ -212,7 +221,7 @@ t(x) = t0 + √((x − x0)² + z0²) / c_water
 | `z0` | 230 m | Source-to-cable perpendicular distance |
 | `t0` | 0.49 s | Source excitation time |
 
-![Hyperbola fit — source localisation](plots/hyperbola_fit.png)
+<img src="plots/hyperbola_fit.png" width="700">
 
 ---
 
@@ -232,7 +241,7 @@ The **slowness–time image** reveals:
 - *From which direction* (slowness axis, converted to incidence angle θ = arcsin(p · c))
 - Multiple simultaneous arrivals appear as distinct blobs
 
-![Slowness–time beamforming image](plots/beamforming_anomaly.png)
+<img src="plots/beamforming_anomaly.png" width="700">
 
 ### Focused DAS
 
@@ -250,119 +259,42 @@ produces a beamformed time-domain signal with improved coherence.
 > gain is limited by spatially correlated noise and the cos²(θ) DAS directional sensitivity.
 > The peak single channel may outperform the array average in this geometry.
 
-![Focused DAS — time domain and Welch PSD](plots/focused_das.png)
-
-The final output combines:
-
-- **Time-domain:** focused DAS waveform showing the pulse shape
-- **Frequency-domain:** Welch PSD of the focused signal
-
-The PSD shows a dominant peak near **100 Hz**, consistent with the plasma-pulse source
-spectrum reported in the paper.
----
+<img src="plots/focused_das.png" width="700">
 
 
-## 7. Classification of Acoustic Events
+
+## 7. Supervised Classification of Acoustic Events
 
 DAS monitoring serves two distinct operational contexts — submarine cable surveillance
 and water pipeline monitoring — each with different signal and noise characteristics
 that shape the choice of classification approach.
 
----
 
-### 7.1 Signal and Noise Characteristics by Application
+Unsupervised anomaly detection (see Section 4) flags abnormal windows without requiring
+labels. Once confirmed events have been annotated by operators, a supervised classifier
+can distinguish between event types. Label availability remains the primary constraint —
+the approaches below are ordered from least to most data-hungry.
 
-#### Submarine Cable Monitoring
+**Submarine cable** — target classes include anchor strike, CPS abrasion, cable
+exposure, vessel passage, and background. Events are transient and spatially localised,
+so the feature vector should include directional and spatial features:
 
-Target events arrive as **transient, broadband impulses** propagating through the water
-column at ~1480 m/s, producing a hyperbolic travel-time signature across the array.
-Distinct event types include anchor strikes (high-energy, short duration), CPS abrasion
-(repetitive narrow-band scraping correlated with tidal/current periodicity), cable
-exposure (gradual low-frequency strain increase), and electrical partial discharge
-(high-frequency burst, >1 kHz).
+- **Gradient Boosting (XGBoost / LightGBM)** on the full feature vector (energy,
+  impulsiveness, spectral shape, slowness, source distance): robust to the small
+  labelled datasets typical of early deployments; SHAP values provide per-alert
+  explanation auditable by operators.
+- **CNN on the f-k-filtered spectrogram**: the hyperbolic moveout pattern encodes both
+  event type and source geometry as a 2-D image; effective when labelled data from
+  multiple wind farms is pooled.
 
-Background noise is **spatially and temporally non-stationary**: shipping traffic
-contributes tonal propeller harmonics (5–50 Hz) with characteristic linear moveout in
-the f-k domain; ocean swell generates low-frequency (< 1 Hz) correlated noise across
-all channels; biological sources such as whale vocalisations produce structured
-narrowband calls. Crucially, guided elastic waves travelling along the cable structure
-at speeds well above c_water appear as steep-slope components in f-k space and must be
-separated from water-borne arrivals before classification.
+**Water pipeline** — target classes are typically leak, intrusion, pump transient, and normal.
+Leaks are continuous and stationary, not transient, so temporal context matters:
 
-#### Water Pipeline Monitoring
-
-Target signals are **continuous, stationary broadband noise** rather than discrete
-impulses. Leak orifices generate turbulent flow noise spanning ~100 Hz to several kHz,
-with spectral shape dependent on pressure differential and orifice geometry. Intrusion
-events (drilling, excavation) produce impulsive mechanical transients with dominant
-energy below 500 Hz.
-
-Background interference is **deterministic and periodic**: pump harmonics appear as
-narrow spectral lines at fundamental and overtone frequencies; valve actuation produces
-short-lived broadband bursts; water hammer generates decaying oscillatory transients.
-Unlike the subsea case, signal propagation is confined to the pipe wall (elastic guided
-waves at 1000–5000 m/s depending on material), so f-k separation by water-column
-velocity is not applicable — discrimination relies on spectral and temporal features
-rather than apparent velocity.
-
----
-
-### 7.2 Feature-Based Classification Framework
-
-The 7-feature vector (Section 3) together with source-localisation outputs `(x0, z0)`
-and beamforming slowness estimates form a **classification feature vector**:
-
-| Feature group | Examples | Most relevant for |
-|---|---|---|
-| Energy features | RMS, Peak, band energies | Both |
-| Impulsiveness | Crest Factor, Kurtosis | Cable impacts, pipeline intrusion |
-| Spectral shape | WPD sub-band ratios, PSD peak frequency | Leak vs pump discrimination |
-| Temporal stationarity | Short-time RMS variance, autocorrelation decay | Leak (stationary) vs impact (transient) |
-| Spatial | Source distance `z0`, along-cable position `x0` | Cable localisation |
-| Directional | Dominant slowness, f-k velocity | Cable event typing |
-
----
-
-### 7.3 Recommended ML Approaches
-
-#### For submarine cable events (transient, multi-class)
-
-Events are sparse and labelled examples are scarce, favouring methods robust to small
-datasets:
-
-- **Random Forest / Gradient Boosting** on the hand-crafted feature vector: interpretable,
-  resistant to overfitting on small labelled sets, and directly auditable by domain
-  experts — important for operational deployment where false alarms are costly.
-- **1-D CNN on the f-k-filtered spectrogram**: captures the hyperbolic moveout pattern
-  that encodes both event type and source geometry; suitable when a moderate labelled
-  dataset is available across multiple deployments.
-- **One-class SVM or Isolation Forest** for anomaly detection in the absence of labelled
-  event examples: trained on background-only data and triggered when a new observation
-  falls outside the learned noise manifold.
-
-#### For pipeline leak detection (continuous signal, binary or multi-class)
-
-The continuous nature of leak signals favours methods that exploit temporal context:
-
-- **Sliding-window feature classification (Random Forest / XGBoost)**: the 7-feature
-  vector computed in overlapping windows captures the sustained elevated RMS and spectral
-  shift associated with active leaks; temporal smoothing of classifier output reduces
-  false positives from transient pump noise.
-- **Autoencoder on short-time spectrograms**: trained on normal pipeline noise; elevated
-  reconstruction error flags anomalous acoustic activity without requiring labelled leak
-  examples — practical given the rarity of real leak events in training data.
-- **Physics-informed feature engineering**: expressing band energy ratios relative to
-  known pump harmonic frequencies explicitly encodes domain knowledge and reduces the
-  burden on the classifier to learn these invariances from data.
-
-#### Shared consideration: interpretability over complexity
-
-In both applications the cost of a missed detection (cable failure, pipe burst) is high,
-and operators need to trust and audit alerts. A well-engineered feature vector fed to a
-gradient-boosted tree — with SHAP values for per-alert explanation — is therefore
-preferable to a black-box deep model unless labelled data is abundant. Deep approaches
-are best reserved for sub-tasks where their advantage is clear, such as spectrogram-based
-event typing in the submarine cable case.
+- **Sliding-window Gradient Boosting**: classify each 0.5 s window independently, then
+  apply temporal smoothing (majority vote or hidden Markov model) over consecutive
+  windows to suppress isolated false positives from valve transients.
+- Leak signals are rare in labelled training sets; **class-weighted loss or SMOTE
+  oversampling** is necessary to prevent the classifier from ignoring the minority class.
 
 
 
