@@ -223,9 +223,22 @@ The **slowness–time image** reveals:
 
 
 
-## 7. Supervised Classification of Acoustic Events
+## 7. Classification of Acoustic Events
+### Quick discrimination guide
 
-<img src="plots/stft_fk_ch539.png" width="700">
+| Dimension | Question to ask | What it tells you |
+|---|---|---|
+| **Time domain** | Transient or continuous? | Transient → impact event (anchor strike, intrusion); continuous → leak or background noise |
+| **Time domain** | Periodic or irregular? | Periodic → mechanical source (pump, rotating machinery); irregular → leak turbulence or random impacts |
+| **Frequency domain** | Broadband or narrowband? | Broadband → turbulent/impact source (leak, strike); narrowband tonal → mechanical harmonic or CPS scraping |
+| **Frequency domain** | Where is the energy? | Below 10 Hz → cable strain / swell; 5–50 Hz → shipping; 100 Hz–kHz → leak or impact |
+| **Spatial domain** | Local or all channels? | All channels simultaneously → correlated noise (swell, earthquake); localised → discrete event near that position |
+| **Spatial domain** | Linear moveout in space–time? | Yes → propagating source (vessel, wave); no → stationary source (leak, fixed machinery) |
+| **Apparent velocity** | Fast or slow? | >> c_water (1480 m/s) → cable-guided elastic wave; ~ c_water → water-borne acoustic; << c_water → Scholte / interface wave |
+
+
+### Supervised machine learning algorithms
+
 
 DAS monitoring serves two distinct operational contexts — submarine cable surveillance
 and water pipeline monitoring — each with different signal and noise characteristics
@@ -244,6 +257,8 @@ contexts from early deployment.
 
 **Spectrogram-based approach** — a 2-D CNN operates directly on the time–frequency
 representation, bypassing manual feature engineering:
+
+<img src="plots/stft_fk_ch539.png" width="700">
 
 - *Submarine cable*: the f-k-filtered spectrogram encodes hyperbolic moveout patterns
   that carry both event type and source geometry; most effective when labelled data
