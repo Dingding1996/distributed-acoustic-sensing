@@ -11,6 +11,7 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 
 ![alt text](flow.jpg)
 
+This project covers the first 6 steps.
 
 ## 1. Business Understanding
 
@@ -111,15 +112,15 @@ to the bandpass-filtered strain-rate time series of the peak channel.
 | **Peak** | Time | Maximum absolute amplitude |
 | **Crest Factor** | Time | Peak / RMS — impulsiveness indicator |
 | **Kurtosis** | Time | Fourth statistical moment — transient sharpness |
-| **Band energy Lo** | Frequency | Welch PSD mean, 1–50 Hz |
-| **Band energy Mid** | Frequency | Welch PSD mean, 50–100 Hz |
-| **Band energy Hi** | Frequency | Welch PSD mean, 100–148 Hz |
+| **Band energy** | Frequency | Welch PSD mean, 1–50 Hz, 50–100 Hz， 100–148 Hz |
 | **WPD sub-bands** | Frequency | Wavelet packet decomposition (db4, level 3, 62 Hz / band) |
 
 A combined **anomaly score** is formed by z-scoring all 7 features and computing their
 L2 norm: `score = ‖z‖₂ = √(Σ zᵢ²)`.  Windows exceeding a threshold (default 2.5) define
 the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
+
+<img src="plots/peak_amplitude.png" width="630">
 <img src="plots/features_ch539.png" width="700">
 
 ---
@@ -129,11 +130,9 @@ the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 ### Current Method — RMS Sliding Window + L2 Anomaly Score
 
 1. A 0.5 s sliding window scans the full record; the window with maximum RMS energy defines
-   the event time.
-2. The 7-feature L2 z-score (Section 3) identifies the precise anomalous segment and
-   outputs `t_window_anomaly`.
+the event time.
+2. Root-sum-of-squares anomaly score across all 7 z-scored features flags anomalous segment `t_window_anomaly`.
 
-<img src="plots/peak_amplitude.png" width="630">
 
 <img src="plots/anomaly_detection.png" width="630">
 
