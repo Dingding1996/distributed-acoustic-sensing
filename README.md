@@ -1,4 +1,16 @@
-# DAS Signal Processing — Submarine Cable Detection
+# Distributed Acoustic Sensing - Signal Processing
+
+## Pipeline Overview
+
+| Step | Summary |
+|---|---|
+| **1. Business Understanding** | Leak/intrusion detection in water pipelines; anchor strike, CPS abrasion, and cable exposure monitoring in offshore wind subsea cables |
+| **2. Data Understanding** | Public DAS dataset, raw SAC format |
+| **3. Feature Engineering** | 7 single-channel features in sliding windows: RMS, Peak, Crest Factor, Kurtosis, band energies, WPD sub-bands |
+| **4. Event Detection** | root-sum-of-squares anomaly score across all 7 z-scored features flags anomalous segment;           unsupervised extension: Isolation Forest / Autoencoder on feature vector |
+| **5. Source Localisation** | f-k separation isolates acoustic vs Scholte components; cross-correlation picks + hyperbola fit yields source position and excitation time|
+| **6. Beamforming** | Plane-wave slowness–time image reveals arrival direction and timing;
+| **7. Classification** | Supervised classification of labelled event types; feature vector and spectrogram  |
 
 ## 1. Business Understanding
 
@@ -17,25 +29,18 @@ axial strain rate at a fixed position along the fibre, giving a 2-D space–time
 
 Offshore wind farms depend on subsea export and inter-array power cables to deliver
 electricity to shore. Cable failure causes expensive downtime; repair
-campaigns require specialised vessels and can take weeks. Cables face burial exposure,
-mechanical fatigue at Cable Protection Systems (CPS), third-party anchor strikes, and
-electrical faults — all difficult to detect by periodic vessel-based inspection.
+campaigns require specialised vessels and can take weeks. Cable failures are all difficult to detect by periodic vessel-based inspection.
 
 **Objective:** Provide continuous, real-time health monitoring of subsea power cables —
-detecting exposure, CPS scraping, impact events, and electrical anomalies — to enable
+detecting exposure, CPS abrasion, impact events, and electrical anomalies — to enable
 proactive Operations and Maintenance decisions and reduce unplanned downtime.
-
-**Why DAS:** The optical fibre already embedded in the cable's structure is repurposed
-as a dense acoustic and strain sensor array spanning the full cable length (up to 70 km
-per interrogator). No offshore vessels or subsea intervention are required for monitoring.
 
 **Key challenges:**
 | | **Type** | **Time Domain** | **Frequency Domain** |
 |---|---|---|---|
 | **Anchor strike** | Target | Single high-energy transient, short duration (<< 1 s); hyperbolic arrival across channels | Broadband 100–400 Hz |
 | **CPS abrasion** | Target | Repetitive scraping bursts, periodicity correlated with tidal/current cycle | Narrow-band tonal, frequency set by contact mechanics |
-| **Cable exposure** | Target | Gradual increase in low-frequency strain, quasi-static | Energy concentration below 10 Hz |
-| **Vessel passage** | Target | Sustained signal, linear moveout across channels at vessel speed | Tonal propeller harmonics 5–50 Hz, broadband cavitation above 100 Hz |
+| **Cable exposure** | Target | Gradual increase in low-frequency strain | Energy concentration below 10 Hz |
 | **Shipping noise** | Noise | Non-stationary, intermittent; linear moveout in space–time | Tonal lines 5–50 Hz; linear slope in f-k domain at vessel apparent velocity |
 | **Ocean swell** | Noise | Low-frequency modulation correlated across all channels simultaneously | Below 1 Hz |
 | **Whale vocalisation** | Noise | Structured call pattern, intermittent | Narrowband, species-dependent (typically 10–1000 Hz) |
@@ -53,10 +58,6 @@ pose safety and service-continuity risks.
 **Objective:** Detect and localise leaks and intrusions in real time, with sufficient
 spatial precision (<10 m) to guide targeted repair without unnecessary excavation.
 
-**Why DAS:** A single fibre installed inside or alongside the pipe acts as a continuous
-array of thousands of acoustic sensors. Leak orifices generate broadband turbulent noise
-(~100 Hz – several kHz); intrusion events produce characteristic mechanical impacts.
-DAS captures both continuously, without on-site intervention.
 
 **Key challenges:**
 | | **Type** | **Time Domain** | **Frequency Domain** |
@@ -182,7 +183,7 @@ separates:
 
 <img src="plots/fk_single_ch539.png" width="630">
 
-<img src="plots/stft_fk_ch539.png" width="700">
+
 
 ### Hyperbola Fit
 
@@ -256,6 +257,8 @@ produces a beamformed time-domain signal with improved coherence.
 
 
 ## 7. Supervised Classification of Acoustic Events
+
+<img src="plots/stft_fk_ch539.png" width="700">
 
 DAS monitoring serves two distinct operational contexts — submarine cable surveillance
 and water pipeline monitoring — each with different signal and noise characteristics
