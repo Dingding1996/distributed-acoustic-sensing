@@ -103,6 +103,10 @@ persistent background noise.
 
 ## 3. Feature Engineering — Single-Channel Features
 
+ A 0.5 s sliding window scans the full record; the window with maximum RMS energy defines
+the event channel. 
+<img src="plots/peak_amplitude.png" width="630">
+
 Seven features are extracted in a **sliding window** (window = 0.5 s, hop = 0.25 s) applied
 to the bandpass-filtered strain-rate time series of the peak channel.
 
@@ -115,12 +119,8 @@ to the bandpass-filtered strain-rate time series of the peak channel.
 | **Band energy** | Frequency | Welch PSD mean, 1–50 Hz, 50–100 Hz， 100–148 Hz |
 | **WPD sub-bands** | Frequency | Wavelet packet decomposition (db4, level 3, 62 Hz / band) |
 
-A combined **anomaly score** is formed by z-scoring all 7 features and computing their
-L2 norm: `score = ‖z‖₂ = √(Σ zᵢ²)`.  Windows exceeding a threshold (default 2.5) define
-the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
 
-<img src="plots/peak_amplitude.png" width="630">
 <img src="plots/features_ch539.png" width="700">
 
 ---
@@ -129,17 +129,16 @@ the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
 ### Current Method — RMS Sliding Window + L2 Anomaly Score
 
-1. A 0.5 s sliding window scans the full record; the window with maximum RMS energy defines
-the event time.
-2. Root-sum-of-squares anomaly score across all 7 z-scored features flags anomalous segment `t_window_anomaly`.
-
+A combined **anomaly score** is formed by z-scoring all 7 features and computing their
+L2 norm: `score = ‖z‖₂ = √(Σ zᵢ²)` (Root-sum-of-squares). Windows exceeding a threshold (default 2.5) define
+the anomalous segment `t_window_anomaly` used in all subsequent analyses.
 
 <img src="plots/anomaly_detection.png" width="630">
 
 
 ### Suggested Extension — Machine Learning Anomaly Detection
 
-Applicable to both submarine cable and pipeline contexts from day one.
+Applicable to both submarine cable and pipeline contexts.
 
 - **Isolation Forest / One-Class SVM** on the 7-feature vector: trained on background
   windows only; flags observations that deviate from the learned noise distribution.
