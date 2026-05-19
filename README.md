@@ -277,6 +277,7 @@ Trained classifiers are evaluated on held-out event windows using standard metri
 <img src="plots/confusion.jpg" width="489">
 
 ### Deployment architecture
+**MLflow**: experiment tracking and model registry. Every training run logs parameters, F1-macro, and the best pipeline. 
 
 Signal processing and machine learning pipelines are packaged as **Docker containers** to ensure reproducible environments across testing and deployment. 
 
