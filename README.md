@@ -247,7 +247,7 @@ can distinguish between event types. Label availability remains the primary cons
 
 **Feature vector approach** — hand-crafted features (energy, impulsiveness, spectral
 shape, slowness, source distance) are fed to a gradient boosting classifier
-(XGBoost / LightGBM). Robust to small labelled datasets; SHAP values provide per-alert
+(XGBoost / LightGBM) or random forest. Robust to small labelled datasets; SHAP values provide per-alert
 explanation auditable by operators. Applicable to both submarine cable and pipeline
 contexts from early deployment.
 
