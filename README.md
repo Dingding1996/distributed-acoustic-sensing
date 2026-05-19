@@ -30,12 +30,13 @@ proactive Operations and Maintenance decisions and reduce unplanned downtime.
 | | **Type** | **Time Domain** | **Frequency Domain** |
 |---|---|---|---|
 | **Anchor strike** | Target | Single high-energy transient, short duration (<< 1 s); hyperbolic arrival across channels | Broadband 100–400 Hz |
-| **CPS abrasion** | Target | Repetitive scraping bursts, periodicity correlated with tidal/current cycle | Narrow-band tonal, frequency set by contact mechanics |
-| **Cable exposure** | Target | Gradual increase in low-frequency strain | Energy concentration below 10 Hz |
+| **CPS abrasion** | Target | Repetitive scraping bursts, periodicity correlated with tidal/current cycle | Narrow-band, frequency set by contact mechanics |
+| **Cable exposure** | Target | Gradual increase in strain amplitude; no discrete event | Energy concentration below 10 Hz |
+| **Partial discharge** | Target | High-frequency burst, intermittent; localised to damage site | Above 1 kHz; broadband impulse |
 | **Shipping noise** | Noise | Non-stationary, intermittent; linear moveout in space–time | Tonal lines 5–50 Hz; linear slope in f-k domain at vessel apparent velocity |
 | **Ocean swell** | Noise | Low-frequency modulation correlated across all channels simultaneously | Below 1 Hz |
 | **Whale vocalisation** | Noise | Structured call pattern, intermittent | Narrowband, species-dependent (typically 10–1000 Hz) |
-| **Cable-guided elastic wave** | Noise | Arrives earlier than water-borne wavefront; same source, different path | Steep slope in f-k domain (apparent velocity >> c_water = 1480 m/s) |
+| **Cable-guided elastic wave** | Noise | Arrives earlier than water-borne wavefront; same source, different path | Steep slope in f-k domain (apparent velocity several km/s) |
 
 
 ---
@@ -55,9 +56,9 @@ spatial precision (<10 m) to guide targeted repair without unnecessary excavatio
 |---|---|---|---|
 | **Leak (orifice)** | Target | Continuous, stationary broadband noise; sustained for as long as leak is active | Broadband ~100 Hz – several kHz; spectral shape depends on pressure differential and orifice geometry |
 | **Intrusion (drilling, excavation)** | Target | Impulsive mechanical transients, irregular repetition rate | Dominant energy below 500 Hz; broadband impact spectrum |
-| **Pump harmonics** | Noise | Periodic, synchronised with pump rotation; highly repeatable | Narrow spectral lines at fundamental and integer harmonics; stable over time |
-| **Valve actuation** | Noise | Short-lived burst, isolated in time | Broadband, decaying rapidly after actuation |
-| **Water hammer** | Noise | Decaying oscillatory transient following rapid pressure change | Oscillatory spectrum at pipe resonance frequencies, decaying envelope |
+| **Pump harmonics** | Noise | Periodic,  in sync with pump rotation; highly repeatable | Narrow spectral lines at fundamental and integer harmonics; stable over time |
+| **Valve operation** | Noise | Short-lived burst, isolated in time | Broadband, decaying rapidly after operation |
+| **Water hammer** | Noise | Decaying oscillatory transient following rapid pressure change | Oscillatory spectrum at pipe resonance frequencies |
 
 
 
