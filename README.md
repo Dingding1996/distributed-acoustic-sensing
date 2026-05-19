@@ -107,10 +107,7 @@ persistent background noise.
 
 
 Seven features are extracted in a **sliding window** (window = 0.5 s, hop = 0.25 s) applied
-to the bandpass-filtered strain-rate time series of the peak channel. The window with maximum RMS energy defines
-the channel to plot. 
-
-<img src="plots/peak_amplitude.png" width="630">
+to the bandpass-filtered strain-rate time series of the peak channel. 
 
 | Feature | Domain | Description |
 |---------|--------|-------------|
@@ -284,7 +281,7 @@ Trained classifiers are evaluated on held-out event windows using standard metri
 Signal processing and machine learning pipelines are packaged as **Docker containers** to ensure reproducible environments across testing and deployment. 
 
 **CI/CD**: A GitHub Actions pipeline runs on every push: automated testing and deployment of model updates, eliminating manual intervention.
----
+
 
 ## Repository Structure
 
