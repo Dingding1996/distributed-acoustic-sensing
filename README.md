@@ -231,8 +231,8 @@ The **slowness–time image** reveals:
 |---|---|---|
 | **Time domain** | Transient or continuous? | Transient → impact event (anchor strike, intrusion); continuous → leak or background noise |
 | **Time domain** | Periodic or irregular? | Periodic → mechanical source (pump, rotating machinery); irregular → leak turbulence or random impacts |
-| **Frequency domain** | Broadband or narrowband? | Broadband → turbulent/impact source (leak, strike); narrowband tonal → mechanical harmonic or CPS scraping |
-| **Frequency domain** | Where is the energy? | Below 10 Hz → cable strain / swell; 5–50 Hz → shipping; 100 Hz–kHz → leak or impact |
+| **Frequency domain** | Broadband or narrowband? | Broadband → turbulent/impact source (leak, strike); narrowband tonal → mechanical harmonic or CPS abrasion|
+| **Frequency domain** | Where is the energy? | Below 10 Hz → cable exposure / swell; 5–50 Hz → shipping; 100 Hz–kHz → leak or impact |
 | **Spatial domain** | Local or all channels? | All channels simultaneously → correlated noise (swell, earthquake); localised → discrete event near that position |
 | **Spatial domain** | Linear moveout in space–time? | Yes → propagating source (vessel, wave); no → stationary source (leak, fixed machinery) |
 | **Apparent velocity** | Fast or slow? | >> c_water (1480 m/s) → cable-guided elastic wave; ~ c_water → water-borne acoustic; << c_water → Scholte / interface wave |
@@ -241,9 +241,7 @@ The **slowness–time image** reveals:
 ### Supervised machine learning algorithms
 
 
-DAS monitoring serves two distinct operational contexts — submarine cable surveillance
-and water pipeline monitoring — each with different signal and noise characteristics
-that shape the choice of classification approach.
+DAS monitoring serves two distinct operational contexts — submarine cable and water pipeline monitoring — each with different signal and noise characteristics that shape the choice of classification approach.
 
 
 Unsupervised anomaly detection (see Section 4) flags abnormal windows without requiring
@@ -265,11 +263,11 @@ representation, bypassing manual feature engineering:
   that carry both event type and source geometry; most effective when labelled data
   from multiple wind farms is pooled.
 - *Water pipeline*: the short-time spectrogram separates broadband leak noise from
-  narrow pump harmonic lines as visually distinct spatial textures; a CNN can exploit
+  narrow pump harmonic lines as visually distinct spatial textures; a CNN can use
   these directly without manual spectral feature design.
 
 In both cases, leak and rare fault classes are underrepresented in training data;
-class-weighted loss or SMOTE oversampling is necessary to prevent the classifier from
+class-weighted loss is necessary to prevent the classifier from
 ignoring minority classes.
 
 
