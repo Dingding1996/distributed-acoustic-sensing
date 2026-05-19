@@ -281,10 +281,9 @@ Trained classifiers are evaluated on held-out event windows using standard metri
 
 ### Deployment architecture
 
-Signal processing pipelines are packaged as **Docker containers** to ensure reproducible environments across testing and deployment. 
+Signal processing and machine learning pipelines are packaged as **Docker containers** to ensure reproducible environments across testing and deployment. 
 
-**CI/CD**: A GitHub Actions pipeline runs on every push: unit tests for signal processing utilities, a model regression test on a reference event, and a Docker image build on merge to a release branch.
-
+**CI/CD**: A GitHub Actions pipeline runs on every push: automated testing and deployment of model updates, eliminating manual intervention.
 ---
 
 ## Repository Structure
