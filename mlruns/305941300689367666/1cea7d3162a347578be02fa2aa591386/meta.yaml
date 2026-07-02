@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/8. DSPandML/distributed-acoustic-sensing/mlruns/305941300689367666/1cea7d3162a347578be02fa2aa591386/artifacts
+end_time: 1783007101702
+entry_point_name: ''
+experiment_id: '305941300689367666'
+lifecycle_stage: active
+run_id: 1cea7d3162a347578be02fa2aa591386
+run_name: das-anomaly_20260702_174455
+run_uuid: 1cea7d3162a347578be02fa2aa591386
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1783007095049
+status: 3
+tags: []
+user_id: '20215518'

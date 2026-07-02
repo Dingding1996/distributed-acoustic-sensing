@@ -1,17 +1,38 @@
 """utils/plot_style.py
 
-Portfolio-wide figure styling.  Three palettes are defined:
-  CMAP_BLUE     — blue-green palette
-  CMAP_RED      — red-salmon palette
-  CMAP_BLUE_RED — blue to orange diverging palette
+Shared figure styling for all plots in this project.
 
-Usage (Section 0 of any notebook)::
+Colourmaps
+----------
+CMAP_BLUE      : blue sequential  (vik left half)  — spatial heatmaps (input, prediction, ground-truth)
+CMAP_RED       : red sequential   (vik right half) — secondary data series
+CMAP_DIVERGING : blue-red diverging (full vik)     — signed error maps
 
-    plot_style = _load_module("plot_style", "utils/plot_style.py")
-    from plot_style import (apply_style, FigSize,
-                            CMAP_BLUE, C1, C2, C3, FAULT_COLORS,
-                            CMAP_RED, D1, D2, D3, FAULT_COLORS_DMG,
-                            CMAP_BLUE_RED, I1, I2, I3, FAULT_COLORS_IR)
+Standard discrete colours  (3 shades each, light → dark)
+---------------------------------------------------------
+BLUE_1, BLUE_2, BLUE_3   — train series
+RED_1,  RED_2,  RED_3    — validation series
+DIV_1,  DIV_2,  DIV_3    — test / diverging series
+
+Helpers
+-------
+blues(n)  — n shades sampled from CMAP_BLUE
+reds(n)   — n shades sampled from CMAP_RED
+divs(n)   — n shades sampled from CMAP_DIVERGING
+
+Figure sizes (FigSize)
+----------------------
+DEFAULT     (6,  4)   — single line/bar chart
+WIDE        (10, 5)   — loss curve, histogram
+SQUARE      (6,  6)   — scatter plot
+MULTI_PANEL (10, 6)   — 2×3 sample grid
+
+Usage::
+    from utils.plot_style import (apply_style, FigSize,
+                                   CMAP_BLUE, CMAP_DIVERGING,
+                                   BLUE_1, BLUE_2, BLUE_3,
+                                   RED_1,  RED_2,  RED_3,
+                                   DIV_1,  DIV_2,  DIV_3)
     apply_style()
 """
 
@@ -20,111 +41,73 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 
+
 # ---------------------------------------------------------------------------
-# Palettes — single source of truth for all colours
+# Colourmaps
 # ---------------------------------------------------------------------------
 
-CMAP_BLUE     = sns.color_palette("ch:start=.2,rot=-.3",  as_cmap=True)
-CMAP_RED      = sns.color_palette("light:#d6604d",          as_cmap=True)
-CMAP_BLUE_RED = LinearSegmentedColormap.from_list(
-    "blue_orange", ["#2166ac", "#f7f7f7", "#d6604d"]
+CMAP_BLUE = LinearSegmentedColormap.from_list(
+    "vik_blue", ["#ece5e0", "#307da6", "#001261"]
+)
+CMAP_RED = LinearSegmentedColormap.from_list(
+    "vik_red", ["#ece5e0", "#c27041", "#590008"]
+)
+CMAP_DIVERGING = LinearSegmentedColormap.from_list(
+    "vik", ["#001261", "#307da6", "#ece5e0", "#c27041", "#590008"]
 )
 
 
+# ---------------------------------------------------------------------------
+# Colour helpers
+# ---------------------------------------------------------------------------
+
 def blues(n: int, lo: float = 0.35, hi: float = 0.95) -> list:
-    """Return n evenly-spaced RGBA colours from CMAP_BLUE.
-
-    Args:
-        n:   Number of colours to return.
-        lo:  Lower bound on the colormap (0 = lightest, 1 = darkest).
-        hi:  Upper bound on the colormap.
-
-    Returns:
-        List of n RGBA tuples, light-to-dark.
-    """
+    """Return n RGBA colours from CMAP_BLUE, light → dark."""
     return [CMAP_BLUE(v) for v in np.linspace(lo, hi, n)]
 
 
-def salmons(n: int, lo: float = 0.35, hi: float = 0.95) -> list:
-    """Return n evenly-spaced RGBA colours from CMAP_RED.
-
-    Args:
-        n:   Number of colours to return.
-        lo:  Lower bound on the colormap.
-        hi:  Upper bound on the colormap.
-
-    Returns:
-        List of n RGBA tuples.
-    """
+def reds(n: int, lo: float = 0.35, hi: float = 0.95) -> list:
+    """Return n RGBA colours from CMAP_RED, light → dark."""
     return [CMAP_RED(v) for v in np.linspace(lo, hi, n)]
 
 
-def blue_reds(n: int, lo: float = 0.35, hi: float = 0.95) -> list:
-    """Return n evenly-spaced RGBA colours from CMAP_BLUE_RED.
+def divs(n: int, lo: float = 0.35, hi: float = 0.95) -> list:
+    """Return n RGBA colours from CMAP_DIVERGING."""
+    return [CMAP_DIVERGING(v) for v in np.linspace(lo, hi, n)]
 
-    Args:
-        n:   Number of colours to return.
-        lo:  Lower bound on the colormap.
-        hi:  Upper bound on the colormap.
-
-    Returns:
-        List of n RGBA tuples.
-    """
-    return [CMAP_BLUE_RED(v) for v in np.linspace(lo, hi, n)]
-
-
-# Three standard line colours — blue and red series with readable aliases
-C1, C2, C3 = blues(3)
-D1, D2, D3 = salmons(3)
-I1, I2, I3 = blue_reds(3)
-
-# Readable aliases
-blue1, blue2, blue3 = C1, C2, C3
-red1,  red2,  red3  = D1, D2, D3
-
-# Fault-frequency marker colours
-FAULT_COLORS: dict = dict(zip(
-    ["BPFO", "BPFI"],
-    blues(2, lo=0.40, hi=0.95),
-))
-
-FAULT_COLORS_DMG: dict = dict(zip(
-    ["BPFO", "BPFI"],
-    salmons(2, lo=0.40, hi=0.95),
-))
-
-FAULT_COLORS_IR: dict = dict(zip(
-    ["BPFO", "BPFI"],
-    blue_reds(2, lo=0.40, hi=0.95),
-))
 
 # ---------------------------------------------------------------------------
-# Figure sizes  (CLAUDE.md §11.3) — scaled down ~20 % from original
+# Standard discrete colours
 # ---------------------------------------------------------------------------
 
+BLUE_1, BLUE_2, BLUE_3 = blues(3)  # train series        (light → dark)
+RED_1,  RED_2,  RED_3  = reds(3)   # validation series
+DIV_1,  DIV_2,  DIV_3  = divs(3)   # diverging series
+
+GREY_TEST = "#6b6b6b"              # test series — neutral grey for contrast
+
+
+# ---------------------------------------------------------------------------
+# Figure sizes
+# ---------------------------------------------------------------------------
 
 class FigSize:
-    """Standard figure dimensions used across all notebooks."""
+    """Standard figure dimensions used across all plots."""
 
-    DEFAULT            = (6,   4)    # bar charts, general
-    HEATMAP            = (5,   3.5)  # correlation / confusion matrix (small)
-    HEATMAP_LARGE      = (6,   5)    # confusion matrix (large)
-    FEATURE_IMPORTANCE = (6,   4.5)  # wide horizontal bar
-    COUNT              = (4,   3)    # small count / distribution plot
-    MULTI_PANEL        = (10,  6)    # large grid of subplots
-    WIDE_TALL          = (10,  5)    # DSP multi-channel subplots
+    DEFAULT     = (6,  4)   # single line/bar chart
+    WIDE        = (10, 5)   # loss curve, histogram
+    SQUARE      = (6,  6)   # scatter plot
+    MULTI_PANEL = (10, 6)   # 2×3 sample grid
 
 
 # ---------------------------------------------------------------------------
-# Global activator
+# Global style activator
 # ---------------------------------------------------------------------------
-
 
 def apply_style() -> None:
-    """Apply colour cycle, whitegrid theme, and default figure size.
+    """Apply whitegrid theme, blue colour cycle, and default figure size.
 
-    Call once at the bottom of Section 0 imports, replacing the bare
-    sns.set_theme / plt.rcParams lines.
+    Call once at the start of the script before any plotting.
     """
     sns.set_theme(style="whitegrid")
     plt.rcParams["figure.figsize"] = FigSize.DEFAULT

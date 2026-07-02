@@ -1,48 +1,50 @@
-# ── Data ─────────────────────────────────────────────────────────────────
-# Raw DAS data (large binary SAC files — download separately from PubDAS)
-PubDAS_data/
+# ============================================================
+# Claude Code (internal tooling — not for public repos)
+# ============================================================
+CLAUDE.md
+.claude/
+.claude/settings.local.json
 
-# Generated plots — included in repo for README display
-# plots/
+# ============================================================
+# Data (large files / licensed datasets — document source in notebook)
+# ============================================================
+data/
 
-# ── Python ────────────────────────────────────────────────────────────────
+# pubDAS_data/ keeps small reference files in git (geometry, readme, license,
+# Matlab read-example) — only the bulky downloaded HDF5 recordings are ignored.
+pubDAS_data/Data/
+
+# Reference papers/PDFs — local reading material, not part of the repo
+reference/
+
+# ============================================================
+# MLflow (experiment tracking — local, not versioned)
+# ============================================================
+mlflow.db
+
+# ============================================================
+# Generated outputs (reproducible from notebook — not versioned)
+# ============================================================
+
+# ============================================================
+# Credentials & secrets
+# ============================================================
+.env
+.kaggle/
+kaggle.json
+
+# ============================================================
+# Python artifacts
+# ============================================================
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-*.so
-
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# Distribution / packaging
-*.egg-info/
-dist/
-build/
-
-# ── Jupyter ───────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
-*.ipynb_checkpoints
 
-# ── IDE ───────────────────────────────────────────────────────────────────
-.vscode/
-.idea/
-*.code-workspace
-
-# ── OS ────────────────────────────────────────────────────────────────────
+# ============================================================
+# OS / editor noise
+# ============================================================
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# ── Claude Code ───────────────────────────────────────────────────────────
-.claude/
-
-# ── Papers / PDFs (copyright) ─────────────────────────────────────────────
-*.pdf
-
-# ── Misc ──────────────────────────────────────────────────────────────────
-*.log
-*.tmp
+.feature_cache_*.pkl

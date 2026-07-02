@@ -1,19 +1,45 @@
-# DAS Signal Processing — Python dependencies
-# Install: pip install -r requirements.txt
-# Python >= 3.9 recommended
+# DAS Cable Anomaly Detection (Valencia-IslaLink / PubDAS) — Python Dependencies
+# =========================================================
+# Install:  pip install -r requirements.txt
+# Environment: das-py311 (Python 3.11)
+# Keep this file in sync with any new imports added to scripts.
+# Versions below are a verified-compatible set (checked directly via pip in a
+# working environment) — mlflow 3.x requires pandas<3, so don't bump pandas to
+# 3.x without also bumping mlflow and re-verifying the whole set installs
+# cleanly together.
+# =========================================================
 
-# Core scientific stack
-numpy>=1.24
-scipy>=1.10
-pandas>=2.0
+# Core data
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.13.1
 
 # Visualisation
-matplotlib>=3.7
-seaborn>=0.12
+matplotlib==3.9.0
+seaborn==0.13.2
 
-# Progress bars
-tqdm>=4.65
+# Machine learning
+scikit-learn==1.5.0
+shap==0.44.1
+mlflow==2.14.3
 
-# Optional — wavelet packet decomposition
-# conda install -c conda-forge pywavelets
-# pywavelets>=1.4
+# Deep learning (1D-CNN) — install separately; version depends on CUDA availability.
+# CPU-only:  pip install torch --index-url https://download.pytorch.org/whl/cpu
+# CUDA 12.x: pip install torch --index-url https://download.pytorch.org/whl/cu121
+torch>=2.0.0
+
+# Signal processing
+PyWavelets==1.9.0
+
+# Dataset I/O
+h5py==3.16.0            # Valencia DAS strain-rate files (Febus A1-R HDF5 format)
+tqdm==4.67.3
+ipywidgets==8.1.8       # lets tqdm render its widget progress bar in Jupyter
+                        # (otherwise: "IProgress not found" warning, falls back to text bars)
+
+# Dataset download — Globus (PubDAS is hosted as a Globus guest collection;
+# download_dataset.py shells out to an already-authenticated `globus` CLI
+# session rather than re-implementing OAuth — see utils/download_dataset.py
+# docstring for the one-time `globus login` / Globus Connect Personal setup).
+globus-cli==3.41.0
+globus-sdk==4.3.0

@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1782762913988
+current_stage: None
+description: null
+last_updated_timestamp: 1782762913988
+name: das_anomaly_oneclasssvm
+run_id: 2ac0975821fc4991931dc89f976769d0
+run_link: null
+source: file:///C:/8. DSPandML/distributed-acoustic-sensing/mlruns/305941300689367666/2ac0975821fc4991931dc89f976769d0/artifacts/oneclasssvm
+status: READY
+status_message: null
+storage_location: file:///C:/8. DSPandML/distributed-acoustic-sensing/mlruns/305941300689367666/2ac0975821fc4991931dc89f976769d0/artifacts/oneclasssvm
+user_id: null
+version: 14

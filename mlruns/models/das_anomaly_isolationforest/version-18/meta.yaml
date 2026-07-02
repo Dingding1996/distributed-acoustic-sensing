@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1782944987068
+current_stage: None
+description: null
+last_updated_timestamp: 1782944987068
+name: das_anomaly_isolationforest
+run_id: fc2108b092e649779ff3676b4d5dc292
+run_link: null
+source: file:///C:/8. DSPandML/distributed-acoustic-sensing/mlruns/305941300689367666/fc2108b092e649779ff3676b4d5dc292/artifacts/isolationforest
+status: READY
+status_message: null
+storage_location: file:///C:/8. DSPandML/distributed-acoustic-sensing/mlruns/305941300689367666/fc2108b092e649779ff3676b4d5dc292/artifacts/isolationforest
+user_id: null
+version: 18
