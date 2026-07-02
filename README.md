@@ -5,7 +5,7 @@ Predictive-maintenance case study based on the CRISP-DM methodology, applied to
 signal processing and DSP feature engineering, through fully **unsupervised anomaly detection**, to
 an honest evaluation of what's actually validated versus what's still open.
 
-![Work flow](Flow.jpg)
+![Work flow](plots/Flow.jpg)
 
 The diagram above is this project's own scope map, not aspirational: stages 1–5 (blue) are what this
 revision implements — business understanding through evaluation of an anomaly-*detection* model.
@@ -321,3 +321,12 @@ recorded here so the plan doesn't only live in one diagram.
    next-generation seismic imaging and detection techniques.
 2. University of Michigan Photonic Seismology Lab, Spanish National Geographic Institute, IslaLink —
    Valencia-IslaLink DAS sub-dataset contribution to PubDAS.
+
+---
+
+## License
+
+The code in this repository is licensed under the [MIT License](LICENSE). The Valencia-IslaLink DAS
+dataset itself is separately licensed under the Open Database License (ODBL) by its original
+contributors — see `pubDAS_data/ODBL_license.txt`; this repo's MIT license covers only the code, not
+the dataset.
