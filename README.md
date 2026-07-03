@@ -1,4 +1,4 @@
-# DAS Cable Anomaly Detection — Submarine Power-Cable Health Monitoring
+# Submarine Cable Anomaly Detection via Distributed Acoustic Sensing
 
 Predictive-maintenance case study based on the CRISP-DM methodology, applied to
 **Distributed Acoustic Sensing (DAS)** data from a submarine telecom fiber. Covers raw strain-rate
