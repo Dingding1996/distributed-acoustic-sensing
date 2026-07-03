@@ -120,6 +120,7 @@ concentrates, not just asserted.
 | Frequency | Welch PSD band energies | Power in a small set of non-uniform bands, concentrated in the low-frequency vessel-relevant range (2–8, 8–20, 20–35, 35–50, 50–90, 90–124 Hz) |
 | Frequency| WPD sub-band energies | 8 equal-width wavelet-packet sub-bands, `db4`, level 3 |
 | Frequency | Peakiness | Welch PSD max ÷ mean — how tonal vs. broadband the window is, catching a narrow tonal peak (e.g. a vessel's engine line) that coarse band-energy features alone could miss |
+
 ![Feature distributions](plots/feature_distributions.png)
 ![Feature surfaces — time × distance × value, representative event](plots/feature_surfaces_3d_SR_Valencia_2020-09-01_15-21-30_UTC.png)
 
