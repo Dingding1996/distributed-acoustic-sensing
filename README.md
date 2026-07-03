@@ -2,12 +2,12 @@
 
 Predictive-maintenance case study based on the CRISP-DM methodology, applied to
 **Distributed Acoustic Sensing (DAS)** data from a submarine telecom fiber. Covers raw strain-rate
-signal processing and DSP feature engineering, through fully **unsupervised anomaly detection**, to
+signal processing and feature engineering, through fully **unsupervised anomaly detection**, to
 an honest evaluation of what's actually validated versus what's still open.
 
 ![Work flow](plots/flow.jpg)
 
-The diagram above is this project's own scope map, not aspirational: stages 1–5 (blue) are what this
+The diagram above is this project's own scope map, not aspirational: stages 1–6 (blue) are what this
 revision implements — business understanding through evaluation of an anomaly-*detection* model.
 Stages 7–9 (red) — event *localisation*, *classification* and their evaluation, and deployment — are explicitly **out of scope for this revision**, not silently
 dropped. See [Limitations & Next Steps](#limitations--next-steps) for why, and what each would need.
@@ -52,7 +52,7 @@ classification.
 - **Recording window**: Sept 1–7, 2020, split by PubDAS into hourly folders ("events") of six
   10-minute HDF5 files each (~1.78 GB/file, ~10.7 GB/hour).
 - **What's actually downloaded**: a `MAX_HOURS`-capped subset (currently 4 of the available hours,
-  ~42.7 GB) — a disk-space cap, not a dataset limit. The pipeline is designed around *multiple*
+  ~42.7 GB). The pipeline is designed around *multiple*
   hour-folders being the norm; nothing about the modelling assumes exactly 4.
 
 **Onland/shallow-water channels are excluded everywhere** — filtered by the geometry file's own
@@ -71,10 +71,6 @@ fixed anomaly threshold would systematically flag far-end channels as "anomalous
 because they're noisier, not because anything unusual happened there — see
 [Feature Engineering](#feature-engineering) for how this is corrected.
 
-A second finding from this stage: a persistent narrowband tone pair (~48 Hz, ~63 Hz) near the cable's
-far end shows up at consistent frequency and magnitude across every downloaded hour — too stable to
-be a passing vessel, more consistent with a fixed mechanical or electrical noise source (48 Hz is a
-plausible motor-slip frequency just below Spain's 50 Hz grid frequency).
 
 ---
 
@@ -122,8 +118,8 @@ concentrates, not just asserted.
 | Time | Crest factor | Peak ÷ RMS — rises when isolated spikes stand out against background |
 | Time | Kurtosis | Impulsiveness of the signal |
 | Frequency | Welch PSD band energies | Power in a small set of non-uniform bands, concentrated in the low-frequency vessel-relevant range (2–8, 8–20, 20–35, 35–50, 50–90, 90–124 Hz) |
-| Frequency (optional) | WPD sub-band energies | 8 equal-width wavelet-packet sub-bands, `db4`, level 3 |
-
+| Frequency| WPD sub-band energies | 8 equal-width wavelet-packet sub-bands, `db4`, level 3 |
+| Frequency | Peakiness | Welch PSD max ÷ mean — how tonal vs. broadband the window is, catching a narrow tonal peak (e.g. a vessel's engine line) that coarse band-energy features alone could miss |
 ![Feature distributions](plots/feature_distributions.png)
 ![Feature surfaces — time × distance × value, representative event](plots/feature_surfaces_3d_SR_Valencia_2020-09-01_15-21-30_UTC.png)
 
@@ -154,12 +150,6 @@ Hyperparameters are fixed values, not searched: there's no label-based score to 
 candidate against, so a search would have nothing real to optimise. Wrapped in a
 `sklearn.Pipeline([("scaler", StandardScaler()), ("model", clf)])`, refit inside the training split.
 
-**One-Class SVM was tried and dropped, not adapted.** Its libsvm-backed fit had to be subsampled
-(5,000 of ~846K training rows) for tractable runtime, and the resulting model correlated only weakly
-with both Isolation Forest and an independent hand-crafted baseline detector (Spearman ρ ≈ 0.58,
-versus ≈ 0.92 between Isolation Forest and the baseline) — more consistent with subsampling noise
-than a genuine second signal, and not worth chasing on a project that isn't ML-architecture-focused.
-
 ---
 
 ## Evaluation
@@ -184,19 +174,31 @@ Turning a continuous per-window anomaly score into a short, reviewable list of c
 step, not just a plot — a single isolated high-scoring channel/window cell is far more likely to be
 sensor or preprocessing noise than a real physical event.
 
-**Screening criterion**: within *any* sliding 400 m span of scored channels, at least 80% must exceed
-an empirical threshold (the 99th percentile of the held-out event's own Isolation Forest score) in the
-same 10-second window — a **density** requirement, not a strict "every single channel must pass" rule,
-so one channel dipping below threshold from score noise doesn't disqualify an otherwise-real region.
-Qualifying windows that are close in time (within 30 seconds) and spatially overlapping are merged
-into one region; regions backed by fewer than 2 merged windows are dropped (a single 10-second slice
-isn't long enough to trust as a real physical event on its own — confirmed by checking real output,
-not assumed).
+**Screening criterion**:
+
+- **Threshold**: the 98th percentile of the held-out event's own Isolation Forest score.
+- **Density**: within *any* sliding 400 m span of scored channels, at least 80% must exceed that
+  threshold in the same 10-second window — a density requirement, not a strict "every single channel
+  must pass" rule, so one channel dipping below threshold from score noise doesn't disqualify an
+  otherwise-real region.
+- **Merging**: qualifying windows that are close in time (within 30 seconds) and spatially overlapping
+  are merged into one region.
+- **Minimum size**: regions backed by fewer than 2 merged windows are dropped — a single 10-second
+  slice isn't long enough to trust as a real physical event on its own, confirmed by checking real
+  output, not assumed.
 
 **Every downloaded hour is scanned this way**, not just a fixed zoom, and every surviving region
 becomes one numbered candidate — trainable events' candidates are explicitly marked in-sample (the
 model saw those exact windows during fitting, so a high score there is weaker evidence than a
 candidate from the held-out hour).
+
+| # | event | dataset | time (s) | time | distance (km) | windows merged |
+|---|---|---|---|---|---|---|
+| 1 | 2020-09-01_13-21-28 | training | 1490–1525 | 24:50–25:25 | 6.97–7.56 | 6 |
+| 2 | 2020-09-01_15-21-30 | training | 3035–3145 | 50:35–52:25 | 12.77–13.86 | 20 |
+
+Candidate #2 is the one rendered below — its waterfall (with the screened region marked) and the
+spectrogram of its highest-scoring channel:
 
 ![Example candidate — waterfall, screened region marked](plots/anomaly_spatial_waterfall_event2_annotated.png)
 ![Example candidate — spectrogram of the highest-scoring channel](plots/anomaly_spatial_waterfall_event2_spectrogram.png)
@@ -217,21 +219,6 @@ here). Computed on held-out event windows only, never on training windows.
 ![SHAP feature importance](plots/shap_summary.png)
 
 ---
-
-## Deployment
-
-**Removed for this revision, not implemented.** An earlier revision of this project inherited a
-FastAPI + Docker inference service unmodified from a predecessor project — it still expected `.mat`
-file uploads and returned bearing-fault classes, neither of which applies to DAS strain-rate data.
-Rather than leave that half-adapted and misleading, it's been deleted. The real blocker to rebuilding
-it isn't effort, it's an undecided design question: a DAS inference request would need to accept
-either a raw strain-rate window (how many channels? what duration?) or a pre-extracted feature vector
-— there's no obvious default the way "one `.mat` file in, one class out" was for the bearing project,
-and guessing a contract just to have *something* here would misrepresent where this project actually
-is. If this returns in a future revision, it would reuse the same `AnomalyDetectionPipeline`,
-preprocessing, and feature-extraction functions this notebook already exercises, and load from the
-MLflow registry this notebook already logs to (`mlruns/`, `das_anomaly_isolationforest`) — the model
-itself doesn't need to change, only a decided request contract and a service wrapped around it.
 
 ### Quick Start
 
@@ -259,15 +246,13 @@ distributed-acoustic-sensing/
 │   ├── data_preprocess.py   # preprocess_channels() -- the full raw-to-model-ready pipeline
 │   ├── dsp_features.py      # extract_window_features() -- sliding-window DSP feature extraction
 │   ├── anomaly_models.py    # AnomalyDetectionPipeline + chronological-grouped CV helpers
-│   └── plot_style.py        # Single source of truth for all figure styling
+│   ├── plot_style.py        # Single source of truth for all figure styling
+│   └── hyperbola_localization.py  # Hyperbola-fit TDOA source localization -- future-phase prep,
+│                                  # not integrated into the notebook (see Future Plans below)
 ├── mlruns/                  # MLflow tracking + model registry (committed to git)
 ├── pubDAS_data/             # Raw dataset (gitignored -- large; small reference files kept in git)
-├── plots/                   # Exported figures embedded in this README
-└── old/                     # Archived prior projects -- reference only, not imported by anything
+└── plots/                   # Exported figures embedded in this README
 ```
-
-No `deployment/`, no `.github/workflows/`, no `utils/test_features.py` — all removed, not just
-unused (see [Deployment](#deployment) above and `CLAUDE.md` §10.5/§11/§12 for why).
 
 ---
 
@@ -280,29 +265,25 @@ unused (see [Deployment](#deployment) above and `CLAUDE.md` §10.5/§11/§12 for
    train/test split is real but statistically thin; a single held-out hour says little about
    generalisation across days, weather, or shipping-traffic patterns.
 3. **Source localisation (event localisation in the diagram above) is explicitly out of scope** —
-   plane-wave/focused beamforming and hyperbola-fit TDOA position estimation exist in the archived
-   `old/DAS_Signal_Processing.ipynb` and would require multi-channel array-geometry reasoning this
-   revision deliberately doesn't touch. It's a candidate for a future phase, not a gap in this one.
+   hyperbola-fit TDOA position estimation exist in `hyperbola_localization.py` and would require   multi-channel array-geometry reasoning this revision deliberately doesn't touch. It's a candidate for a future phase, not a gap in this one.
 4. **Event classification is likewise out of scope** — this revision screens for *candidates*, it
    does not attempt to characterise or type what kind of event a candidate might be.
 5. **No documented ground-truth events to validate most hours against** — only the screening step's
    spatial-density heuristic, and any independently published event metadata where it exists, offer
    qualitative support. A real deployment would need either instrumented validation events or a much
    longer observation period before trusting flagged candidates operationally.
-6. **Deployment** — see the section above; the request contract needs to be decided before a service
-   is worth building.
 
 ---
 
 ## Future Plans
 
-The four red stages in the workflow diagram at the top of this README are not scheduled work — they're
+The three red stages in the workflow diagram at the top of this README are not scheduled work — they're
 recorded here so the plan doesn't only live in one diagram.
 
 1. **Event localisation** — pinpointing a screened candidate's source position along the cable. Common approaches include hyperbola-fit TDOA (cross-correlated arrival-time picks fit to a hyperbolic moveout model) and beamforming.
-2. **Event Classification** — once a candidate is screened (this revision) and localised (step 1),
+**Event Classification** — once a candidate is screened (this revision) and localised (step 1),
    classify what kind of event it actually is (vessel transit vs. something else). Nothing built yet.
-3. **Evaluation — needs AIS data.** This is the step this project is currently missing the most: real
+2. **Evaluation — needs AIS data.** This is the step this project is currently missing the most: real
    evaluation requires real ground truth, and the closest thing available is **AIS (Automatic
    Identification System)** ship-tracking data — the GPS position and timestamp every commercial vessel
    broadcasts. Cross-referencing a localised event's estimated position and time against AIS records
@@ -310,17 +291,12 @@ recorded here so the plan doesn't only live in one diagram.
    number, instead of the proxy methods (rank correlation, spatial-density screening) this revision is
    limited to without it. Until AIS data is incorporated, every quality signal in this project stays a
    proxy — that's a data gap, not a permanent ceiling.
-4. **Deployment** — see [Deployment](#deployment) above; likely dependent on what steps 1–3 end up
-   producing, not worth committing to a request contract before then.
-
+3. **Deployment** —  the request contract needs to be decided before a service is worth building.
 ---
 
 ## References
 
-1. Williams, E. F., et al. — PubDAS: A comprehensive, multi-site DAS dataset for benchmarking
-   next-generation seismic imaging and detection techniques.
-2. University of Michigan Photonic Seismology Lab, Spanish National Geographic Institute, IslaLink —
-   Valencia-IslaLink DAS sub-dataset contribution to PubDAS.
+Zack J. Spica, Jonathan Ajo‐Franklin, Gregory C. Beroza, Biondo Biondi, Feng Cheng, Beatriz Gaite, Bin Luo, Eileen Martin, Junzhu Shen, Clifford Thurber, Loïc Viens, Herbert Wang, Andreas Wuestefeld, Han Xiao, Tieyuan Zhu; PubDAS: A PUBlic Distributed Acoustic Sensing Datasets Repository for Geosciences. Seismological Research Letters 2023;; 94 (2A): 983–998. doi: https://doi.org/10.1785/0220220279
 
 ---
 
